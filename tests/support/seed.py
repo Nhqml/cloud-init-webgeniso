@@ -13,11 +13,11 @@ REPOSITORY = Path(__file__).resolve().parents[2]
 BUILD_ISO = REPOSITORY / "tests" / "support" / "build_iso.ts"
 
 MINIMAL = {
-    "user-data": """
+    "user-data": """\
 #cloud-config
 hostname: test
 """,
-    "meta-data": """
+    "meta-data": """\
 instance-id: iid-test
 local-hostname: test
 """,
@@ -25,13 +25,13 @@ local-hostname: test
 
 COMPLETE = {
     **MINIMAL,
-    "network-config": """
+    "network-config": """\
 version: 2
 ethernets:
   eth0:
     dhcp4: true
 """,
-    "vendor-data": """
+    "vendor-data": """\
 #cloud-config
 """,
 }

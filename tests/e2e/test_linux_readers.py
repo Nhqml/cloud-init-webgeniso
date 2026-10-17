@@ -7,18 +7,26 @@
 # dependencies = []
 # ///
 
-"""End-to-end tests on a real Linux kernel, in a Lima VM (Ubuntu LTS).
+"""End-to-end tests: the Linux components that read a seed, in a Lima VM
+(Ubuntu LTS).
 
 - blkid sees an iso9660 filesystem labelled "cidata", as cloud-init needs;
 - the kernel's isofs mounts it with Rock Ridge, Joliet or neither;
 - cloud-init's own NoCloud helpers find the seed and read its files.
 
+The seed is attached to a loop device in a running VM; no VM boots from it
+(Lima provisions its VMs with its own cidata seed).
+
 The VM lives in its own LIMA_HOME (.lima/ in the repository), so it never
 touches other Lima instances, and has no host directories mounted. The first
-run downloads an Ubuntu cloud image. The VM is stopped afterwards, unless
-E2E_KEEP_VM=1 is set to speed up the next run. limactl comes from mise.
+run downloads an Ubuntu cloud image (Lima caches it).
 
-Run: tests/e2e/test_linux.py
+E2E_VM_TEARDOWN chooses what happens to the VM after the run:
+  stop    (default) stop it, keeping its disk; the next run restarts it
+  delete  remove it, so the next run starts from a fresh VM
+  keep    leave it running, for the fastest re-runs
+
+Run: tests/e2e/test_linux_readers.py
 """
 
 import json
@@ -35,10 +43,33 @@ from seed import DATE, REPOSITORY, as_bytes, write_iso
 INSTANCE = "e2e"
 ENV = {**os.environ, "LIMA_HOME": str(REPOSITORY / ".lima")}
 
+# limactl arguments for each E2E_VM_TEARDOWN value; None does nothing.
+TEARDOWN_ACTIONS = {
+    "delete": ("delete", "--force", INSTANCE),
+    "stop": ("stop", INSTANCE),
+    "keep": None,
+}
+TEARDOWN = os.environ.get("E2E_VM_TEARDOWN", "stop")
+if TEARDOWN not in TEARDOWN_ACTIONS:
+    raise SystemExit(
+        f"E2E_VM_TEARDOWN must be one of {', '.join(TEARDOWN_ACTIONS)}, got {TEARDOWN!r}"
+    )
+
 FILES = {
-    "user-data": "#cloud-config\nhostname: e2e\n",
-    "meta-data": "instance-id: iid-e2e\nlocal-hostname: e2e\n",
-    "network-config": "version: 2\nethernets:\n  eth0:\n    dhcp4: true\n",
+    "user-data": """\
+#cloud-config
+hostname: e2e
+""",
+    "meta-data": """\
+instance-id: iid-e2e
+local-hostname: e2e
+""",
+    "network-config": """\
+version: 2
+ethernets:
+  eth0:
+    dhcp4: true
+""",
     "vendor-data": "",
 }
 
@@ -102,8 +133,8 @@ def setUpModule():
 
 
 def tearDownModule():
-    if os.environ.get("E2E_KEEP_VM") != "1":
-        limactl("stop", INSTANCE, timeout=5 * 60)
+    if (action := TEARDOWN_ACTIONS[TEARDOWN]) is not None:
+        limactl(*action, timeout=5 * 60)
 
 
 class LinuxTestCase(unittest.TestCase):

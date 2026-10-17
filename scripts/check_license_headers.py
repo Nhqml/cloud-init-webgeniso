@@ -26,7 +26,7 @@ HEADER_TEXT = [
     "Copyright (C) 2026 Kenji Gaillac",
 ]
 
-#: Line comment marker for each kind of source file we check.
+# Line comment marker for each kind of source file we check.
 COMMENT_MARKERS = [
     (re.compile(r"\.(ts|mts|cts|js|mjs|cjs)$"), "//"),
     (re.compile(r"\.py$"), "#"),

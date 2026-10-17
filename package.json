@@ -21,7 +21,7 @@
     "test": "pnpm test:unit && pnpm test:integration",
     "test:unit": "node --test \"tests/unit/**/*.test.ts\"",
     "test:integration": "for test in tests/integration/test_*.py; do \"$test\" || exit 1; done",
-    "test:e2e": "tests/e2e/test_linux.py",
+    "test:e2e": "tests/e2e/test_linux_readers.py",
     "check:headers": "scripts/check_license_headers.py",
     "check+test": "pnpm typecheck && pnpm check:headers && pnpm test"
   },

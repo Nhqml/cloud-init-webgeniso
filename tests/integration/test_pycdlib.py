@@ -87,7 +87,7 @@ def describe_record(record, decode_name):
     return described
 
 
-#: pycdlib path keyword and file name decoder for each directory tree.
+# pycdlib path keyword and file name decoder for each directory tree.
 TREES = {
     "iso9660": ("iso_path", lambda name: name.decode("ascii")),
     "joliet": ("joliet_path", lambda name: name.decode("utf-16-be")),

@@ -88,8 +88,11 @@ time-dependent:
 - E2E tests run Linux in a Lima VM (Lima from mise, Ubuntu LTS template)
   with its own `LIMA_HOME` (`.lima/`, gitignored) and no host mounts, so it
   never touches other Lima instances. They are not part of `pnpm test`; run
-  them with `pnpm test:e2e`. The VM is stopped after the run unless
-  `E2E_KEEP_VM=1`; `LIMA_HOME=.lima limactl delete e2e` removes it.
+  them with `pnpm test:e2e`. `E2E_VM_TEARDOWN` chooses what happens to the
+  VM afterwards: `stop` (default, keeps the disk; the tests only attach and
+  mount images, so a reused VM is fine), `delete` (next run starts fresh) or
+  `keep` (leaves it running, fastest re-runs). Remove the VM with
+  `LIMA_HOME=.lima limactl delete --force e2e`.
 - Package manager: pnpm.
 - TypeScript runs directly in Node (type stripping), so source must stay
   erasable: no `enum`, `namespace` or parameter properties
@@ -102,12 +105,12 @@ pnpm typecheck         # tsc --noEmit over src, tests and scripts
 pnpm test              # unit + integration tests
 pnpm test:unit         # node:test, tests/unit/**/*.test.ts
 pnpm test:integration  # tests/integration/test_*.py (bsdtar, pycdlib)
-pnpm test:e2e          # tests/e2e/test_linux.py, Linux in a Lima VM (slow)
+pnpm test:e2e          # tests/e2e/test_linux_readers.py, in a Lima VM (slow)
 pnpm check:headers     # license header check (scripts/check_license_headers.py)
 pnpm check+test        # typecheck, headers, unit + integration tests
 pnpm build             # emit dist/ (JS + .d.ts) from src/
 
-E2E_KEEP_VM=1 pnpm test:e2e  # e2e tests, leaving the VM running
+E2E_VM_TEARDOWN=keep pnpm test:e2e  # e2e tests, leaving the VM running
 ```
 
 ## Layout
