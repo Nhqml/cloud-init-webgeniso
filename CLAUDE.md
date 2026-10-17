@@ -59,14 +59,19 @@ Copy genisoimage's behaviour for `-volid cidata -rational-rock -joliet`:
 - Joliet names have no `;1` version suffix, like pycdlib-genisoimage, the
   genisoimage-compatible reference the integration tests compare against.
 - Rock Ridge as `-rational-rock`: uid and gid 0, files `0444`, directories
-  `0555`.
+  `0555`. Rock Ridge version 1.09, on purpose (see `src/rockridge.ts`).
+- Application Use (512 bytes in both volume descriptors) is filled with
+  ASCII spaces, like genisoimage and pycdlib-genisoimage.
 
 Our own choices, where matching genisoimage would make output host- or
-time-dependent:
+time-dependent, or add nothing for a VM seed:
 
 - All dates default to the Unix epoch (1970-01-01T00:00:00Z), so the same
   files always give the same image. Callers pass `date` to override.
 - System, publisher, preparer and application identifiers are left blank.
+- No trailing padding. genisoimage appends 150 zero sectors (300 KiB) by
+  default (`-pad`), a workaround for CD drive read-ahead bugs that's useless
+  for VM seed discs; pycdlib-genisoimage doesn't pad either.
 
 ## Tooling
 
