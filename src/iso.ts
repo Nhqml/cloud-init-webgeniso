@@ -43,6 +43,10 @@ export interface SeedIsoOptions {
   /**
    * Timestamp of every file, directory and volume date. Defaults to the Unix
    * epoch, so the same files always produce the same image.
+   *
+   * Must be a valid date in the years 1900 to 2155 (UTC): directory records
+   * store the year as an offset from 1900 in a single byte. Other dates
+   * throw a RangeError.
    */
   date?: Date;
 }
