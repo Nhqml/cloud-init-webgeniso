@@ -58,6 +58,9 @@ const SEED_FILES = [
   { name: "vendor-data", isoName: "VENDOR_D.;1", required: false },
 ] as const;
 
+/** Volume label cloud-init's NoCloud datasource looks for. */
+const VOLUME_ID = "cidata";
+
 // Fixed sector layout. Only the file data after FIRST_FILE_LBA varies.
 //
 //   LBA     byte offset
@@ -102,11 +105,15 @@ const CONTINUATION_LBA = 24;
 const JOLIET_ROOT_LBA = 25;
 const FIRST_FILE_LBA = 26;
 
-/** A seed file ready to be written: its bytes and where they go. */
-interface PlacedFile {
+/** A seed file given as input: its real and 8.3 names, and its bytes. */
+interface SeedFile {
   name: string;
   isoName: string;
   data: Uint8Array;
+}
+
+/** A seed file ready to be written: also knows where its data goes. */
+interface PlacedFile extends SeedFile {
   /** First logical block of the data; 0 for empty files, which have none. */
   extent: number;
 }
@@ -125,8 +132,10 @@ export function buildSeedIso(files: SeedFiles, options: SeedIsoOptions = {}): Ui
     image.set(bytes, lba * SECTOR_SIZE);
   };
 
-  const primaryRoot = rootRecord(PRIMARY_ROOT_LBA, date);
-  const jolietRoot = rootRecord(JOLIET_ROOT_LBA, date);
+  // Root directory records embedded in the volume descriptors: plain ".",
+  // no System Use, so they stay 34 bytes.
+  const primaryRoot = rootDirectoryRecord(PRIMARY_ROOT_LBA, date, DOT);
+  const jolietRoot = rootDirectoryRecord(JOLIET_ROOT_LBA, date, DOT);
   put(
     PVD_LBA,
     primaryVolumeDescriptor({
@@ -167,10 +176,8 @@ export function buildSeedIso(files: SeedFiles, options: SeedIsoOptions = {}): Ui
   return image;
 }
 
-const VOLUME_ID = "cidata";
-
 /** Validates `files` and returns the seed files present, in SEED_FILES order. */
-function readSeedFiles(files: SeedFiles): { name: string; isoName: string; data: Uint8Array }[] {
+function readSeedFiles(files: SeedFiles): SeedFile[] {
   if (typeof files !== "object" || files === null || Array.isArray(files)) {
     throw new TypeError("files must be an object mapping seed file names to contents");
   }
@@ -183,7 +190,7 @@ function readSeedFiles(files: SeedFiles): { name: string; isoName: string; data:
     }
   }
 
-  const present = [];
+  const present: SeedFile[] = [];
   for (const { name, isoName, required } of SEED_FILES) {
     const content: unknown = files[name];
     if (content === undefined) {
@@ -203,7 +210,7 @@ function toBytes(name: string, content: unknown): Uint8Array {
 }
 
 /** Assigns each non-empty file consecutive sectors, starting at FIRST_FILE_LBA. */
-function placeFiles(files: { name: string; isoName: string; data: Uint8Array }[]): PlacedFile[] {
+function placeFiles(files: SeedFile[]): PlacedFile[] {
   let next = FIRST_FILE_LBA;
   return files.map((file) => {
     if (file.data.length === 0) return { ...file, extent: 0 };
@@ -213,14 +220,24 @@ function placeFiles(files: { name: string; isoName: string; data: Uint8Array }[]
   });
 }
 
-/** The 34-byte root directory record embedded in a volume descriptor. */
-function rootRecord(extent: number, date: Date): Uint8Array {
+/**
+ * A directory record describing the root directory, whose data is the
+ * one-sector directory at `extent`: its "." and ".." entries, and the copy
+ * embedded in each volume descriptor.
+ */
+function rootDirectoryRecord(
+  extent: number,
+  date: Date,
+  identifier: Uint8Array,
+  systemUse?: Uint8Array,
+): Uint8Array {
   return directoryRecord({
     extent,
     dataLength: SECTOR_SIZE,
     date,
     directory: true,
-    identifier: DOT,
+    identifier,
+    ...(systemUse === undefined ? {} : { systemUse }),
   });
 }
 
@@ -232,18 +249,11 @@ function rootRecord(extent: number, date: Date): Uint8Array {
 function primaryDirectory(files: PlacedFile[], date: Date, erLength: number): Uint8Array {
   const directoryAttributes = { mode: MODE_DIRECTORY, links: 2, uid: 0, gid: 0 };
   const fileAttributes = { mode: MODE_FILE, links: 1, uid: 0, gid: 0 };
-  const directory = (identifier: Uint8Array, systemUse: Uint8Array): Uint8Array =>
-    directoryRecord({
-      extent: PRIMARY_ROOT_LBA,
-      dataLength: SECTOR_SIZE,
-      date,
-      directory: true,
-      identifier,
-      systemUse,
-    });
 
   return directorySector([
-    directory(
+    rootDirectoryRecord(
+      PRIMARY_ROOT_LBA,
+      date,
       DOT,
       concat([
         spEntry(),
@@ -253,7 +263,9 @@ function primaryDirectory(files: PlacedFile[], date: Date, erLength: number): Ui
         ceEntry(CONTINUATION_LBA, 0, erLength),
       ]),
     ),
-    directory(
+    rootDirectoryRecord(
+      PRIMARY_ROOT_LBA,
+      date,
       DOTDOT,
       concat([rrEntry(RR_PX | RR_TF), pxEntry(directoryAttributes), tfEntry(date)]),
     ),
@@ -277,18 +289,9 @@ function primaryDirectory(files: PlacedFile[], date: Date, erLength: number): Ui
 
 /** The Joliet root directory: ".", ".." and the files' UCS-2 names, without a ";1" version suffix. */
 function jolietDirectory(files: PlacedFile[], date: Date): Uint8Array {
-  const directory = (identifier: Uint8Array): Uint8Array =>
-    directoryRecord({
-      extent: JOLIET_ROOT_LBA,
-      dataLength: SECTOR_SIZE,
-      date,
-      directory: true,
-      identifier,
-    });
-
   return directorySector([
-    directory(DOT),
-    directory(DOTDOT),
+    rootDirectoryRecord(JOLIET_ROOT_LBA, date, DOT),
+    rootDirectoryRecord(JOLIET_ROOT_LBA, date, DOTDOT),
     ...files.map((file) =>
       directoryRecord({
         extent: file.extent,
