@@ -31,9 +31,13 @@ ISO features unless asked.
   `TextEncoder`), no `node:*` imports. The build config sets `types: []` to
   catch this.
 - Output must be deterministic: same inputs and same date give identical bytes.
-- Test-driven development for everything in `src/`: write the tests first,
-  run them and watch them fail, and only then write the function or method
-  body. This includes changes to existing functions (add or change the test
+- Test-driven development for everything in `src/`. Each cycle:
+  1. Write the tests.
+  2. Write the structure they need: module, exports, types, constants and
+     function signatures, with bodies that only
+     `throw new Error("not implemented")`. Typecheck must pass.
+  3. Run the tests and watch them fail on the stubs, not on missing modules.
+  4. Only then write the function or method bodies. This includes changes to existing functions (add or change the test
   first) and exporting a previously private function. Helpers inside `test/`
   are exempt: the tests that use them validate them.
 
