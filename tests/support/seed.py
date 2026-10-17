@@ -4,6 +4,7 @@
 """Shared helpers for the Python integration and end-to-end tests."""
 
 import base64
+import functools
 import json
 import subprocess
 from datetime import UTC, datetime
@@ -11,6 +12,24 @@ from pathlib import Path
 
 REPOSITORY = Path(__file__).resolve().parents[2]
 BUILD_ISO = REPOSITORY / "tests" / "support" / "build_iso.ts"
+
+
+@functools.cache
+def tool(name):
+    """Absolute path of the dev tool `name`, as pinned in mise.toml.
+
+    Tests never take tools from PATH: run outside the mise environment, PATH
+    could hold another version, such as the bsdtar macOS ships.
+    """
+    result = subprocess.run(
+        ["mise", "which", name], cwd=REPOSITORY, capture_output=True, text=True
+    )
+    if result.returncode != 0:
+        raise RuntimeError(
+            f"{name} must be provided by mise (see mise.toml, run `mise install`): "
+            + result.stderr.strip()
+        )
+    return result.stdout.strip()
 
 MINIMAL = {
     "user-data": """\
@@ -64,7 +83,7 @@ def build_iso(files, date=None):
     if date is not None:
         request["date"] = date.isoformat()
     result = subprocess.run(
-        ["node", str(BUILD_ISO)],
+        [tool("node"), str(BUILD_ISO)],
         input=json.dumps(request).encode("utf-8"),
         capture_output=True,
         check=True,

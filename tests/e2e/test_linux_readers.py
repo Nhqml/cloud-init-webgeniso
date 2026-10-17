@@ -38,7 +38,7 @@ import unittest
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "support"))
-from seed import DATE, REPOSITORY, as_bytes, write_iso
+from seed import DATE, REPOSITORY, as_bytes, tool, write_iso
 
 INSTANCE = "e2e"
 ENV = {**os.environ, "LIMA_HOME": str(REPOSITORY / ".lima")}
@@ -76,7 +76,7 @@ ethernets:
 
 def limactl(*args, input="", timeout=60):
     return subprocess.run(
-        ["limactl", *args],
+        [tool("limactl"), *args],
         env=ENV,
         input=input,
         capture_output=True,

@@ -83,6 +83,10 @@ time-dependent:
   dependencies (e.g. pycdlib) are pinned in its inline metadata. Tests get
   images from our builder through `tests/support/build_iso.ts` (JSON on
   stdin, ISO on stdout).
+- Python tests never take tools from PATH: `tool(name)` in
+  `tests/support/seed.py` resolves them with `mise which`, so they use the
+  versions pinned in `mise.toml` even when run outside the mise environment
+  (where PATH could hold, for example, the bsdtar macOS ships).
 - Integration tests read images back with `bsdtar` (libarchive, from mise)
   and pycdlib, and compare with `pycdlib-genisoimage`.
 - E2E tests run Linux in a Lima VM (Lima from mise, Ubuntu LTS template)

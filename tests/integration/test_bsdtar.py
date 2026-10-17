@@ -27,7 +27,7 @@ import unittest
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "support"))
-from seed import COMPLETE, DATE, MINIMAL, as_bytes, write_iso
+from seed import COMPLETE, DATE, MINIMAL, as_bytes, tool, write_iso
 
 # bsdtar read options selecting which directory tree it uses.
 VIEWS = {
@@ -43,14 +43,6 @@ PLAIN_NAMES = {
     "user-data": "USER_DAT",
     "vendor-data": "VENDOR_D",
 }
-
-
-def setUpModule():
-    version = subprocess.run(
-        ["bsdtar", "--version"], capture_output=True, text=True, check=True
-    ).stdout
-    if "libarchive" not in version:
-        raise RuntimeError("bsdtar from libarchive is required: run `mise install`")
 
 
 class BsdtarTestCase(unittest.TestCase):
@@ -76,7 +68,7 @@ class BsdtarTestCase(unittest.TestCase):
     def list(self, image, view):
         """The image's entries as seen through `view`, as dicts."""
         output = subprocess.run(
-            ["bsdtar", "-tvf", str(image), "--numeric-owner", *VIEWS[view]],
+            [tool("bsdtar"), "-tvf", str(image), "--numeric-owner", *VIEWS[view]],
             capture_output=True,
             text=True,
             check=True,
@@ -104,7 +96,7 @@ class BsdtarTestCase(unittest.TestCase):
         """Extracts the image as seen through `view`; returns the directory."""
         target = Path(tempfile.mkdtemp(dir=self.work_dir, prefix="extract-"))
         subprocess.run(
-            ["bsdtar", "-xpf", str(image), "-C", str(target), *VIEWS[view]], check=True
+            [tool("bsdtar"), "-xpf", str(image), "-C", str(target), *VIEWS[view]], check=True
         )
         return target
 
