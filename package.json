@@ -21,8 +21,7 @@
     "test": "pnpm test:unit && pnpm test:integration",
     "test:unit": "node --test \"tests/unit/**/*.test.ts\"",
     "test:integration": "for test in tests/integration/test_*.py; do \"$test\" || exit 1; done",
-    "check:headers": "node scripts/check-license-headers.ts",
-    "check": "pnpm typecheck && pnpm check:headers && pnpm test"
+    "check:headers": "scripts/check_license_headers.py"
   },
   "devDependencies": {
     "@types/node": "^26.6.5",
