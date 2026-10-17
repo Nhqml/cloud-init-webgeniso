@@ -15,14 +15,17 @@ ISO features unless asked.
 
 ## Rules
 
-- Every source file (`.ts`, `.js`, `.mjs`, `.cjs`, …) must start with exactly:
+- Every source file (`.ts`, `.js`, `.mjs`, `.cjs`, `.py`) must start with
+  exactly:
 
   ```ts
   // SPDX-License-Identifier: AGPL-3.0-or-later
   // Copyright (C) 2026 Kenji Gaillac
   ```
 
-  A shebang line may come before it. `pnpm check:headers` enforces this.
+  with `#` instead of `//` in Python files. A shebang and blank lines may
+  come before it, but the two lines must be consecutive.
+  `pnpm check:headers` enforces this.
 - The project is AGPL-3.0-or-later. Don't copy code from projects with
   incompatible licenses (GPLv2-only, proprietary, unlicensed snippets).
   Implement from the specs (ECMA-119, SUSP/RRIP, Joliet) instead.
@@ -40,8 +43,8 @@ ISO features unless asked.
   4. Only then write the function or method bodies.
 
   This also applies to changes to existing functions (add or change the test
-  first) and to exporting a previously private function. Helpers inside
-  `test/` are exempt: the tests that use them validate them.
+  first) and to exporting a previously private function. Code inside
+  `tests/` is exempt: the tests that use it validate it.
 
 ## Format decisions
 
@@ -53,6 +56,8 @@ Copy genisoimage's behaviour for `-volid cidata -rational-rock -joliet`:
 - Primary-tree file names use genisoimage's default 8.3 mapping:
   `META_DAT.;1`, `NETWORK_.;1`, `USER_DAT.;1`, `VENDOR_D.;1`. Rock Ridge `NM`
   entries and Joliet carry the real names.
+- Joliet names have no `;1` version suffix, like pycdlib-genisoimage, the
+  genisoimage-compatible reference the integration tests compare against.
 - Rock Ridge as `-rational-rock`: uid and gid 0, files `0444`, directories
   `0555`.
 
@@ -65,11 +70,25 @@ time-dependent:
 
 ## Tooling
 
-- Tool versions are pinned in `mise.toml` (Node, pnpm, libarchive). Use mise
-  for every dev tool; never rely on what the OS ships.
-- Integration tests (`test/integration/`) read images back with `bsdtar` from
-  libarchive (`conda:libarchive` in mise). Run tests inside the mise
-  environment (`mise exec -- pnpm test`, or a shell with mise activated).
+- Tool versions are pinned in `mise.toml` (Node, pnpm, libarchive, Lima).
+  Use mise for every dev tool; never rely on what the OS ships. Run commands
+  inside the mise environment (`mise exec -- pnpm test`, or a shell with mise
+  activated).
+- Exception: Python and uv are expected on the host, not in `mise.toml`.
+- Unit tests are TypeScript (`node:test`). Integration and e2e tests are
+  Python `unittest` files. Each Python file meant to be run (tests and
+  scripts) is an executable PEP 723 script with the shebang
+  `#!/usr/bin/env -S uv run --quiet --script`, so it runs directly; its
+  dependencies (e.g. pycdlib) are pinned in its inline metadata. Tests get
+  images from our builder through `tests/support/build_iso.ts` (JSON on
+  stdin, ISO on stdout).
+- Integration tests read images back with `bsdtar` (libarchive, from mise)
+  and pycdlib, and compare with `pycdlib-genisoimage`.
+- E2E tests run Linux in a Lima VM (Lima from mise, Ubuntu LTS template)
+  with its own `LIMA_HOME` (`.lima/`, gitignored) and no host mounts, so it
+  never touches other Lima instances. They are not part of `pnpm test`; run
+  them with `pnpm test:e2e`. The VM is stopped after the run unless
+  `E2E_KEEP_VM=1`; `LIMA_HOME=.lima limactl delete e2e` removes it.
 - Package manager: pnpm.
 - TypeScript runs directly in Node (type stripping), so source must stay
   erasable: no `enum`, `namespace` or parameter properties
@@ -78,18 +97,32 @@ time-dependent:
 ## Commands
 
 ```sh
-pnpm typecheck       # tsc --noEmit over src, test, scripts
-pnpm test            # node:test, test/**/*.test.ts
-pnpm check:headers   # license header check
-pnpm check           # all of the above
-pnpm build           # emit dist/ (JS + .d.ts) from src/
+pnpm typecheck         # tsc --noEmit over src, tests and scripts
+pnpm test              # unit + integration tests
+pnpm test:unit         # node:test, tests/unit/**/*.test.ts
+pnpm test:integration  # tests/integration/test_*.py (bsdtar, pycdlib)
+pnpm test:e2e          # tests/e2e/test_linux.py, Linux in a Lima VM (slow)
+pnpm check:headers     # license header check (scripts/check_license_headers.py)
+pnpm check+test        # typecheck, headers, unit + integration tests
+pnpm build             # emit dist/ (JS + .d.ts) from src/
+
+E2E_KEEP_VM=1 pnpm test:e2e  # e2e tests, leaving the VM running
 ```
 
 ## Layout
 
 ```
-src/       library source (published as dist/)
-test/      node:test unit tests
-test/integration/  tests reading images back with external tools
-scripts/   dev scripts (run with node directly)
+src/                library source (published as dist/)
+tests/unit/         TypeScript unit tests (node:test)
+tests/integration/  Python tests reading images back with bsdtar and pycdlib
+tests/e2e/          Python tests on Linux in a Lima VM
+tests/support/      helpers shared by the tests (build_iso.ts, seed.py)
+scripts/            dev scripts (executable Python uv scripts)
 ```
+
+## Git
+
+- Commit messages: `<area>: <summary>`, lowercase summary, e.g.
+  `iso9660: add path table`, `tests: rework integration tests`,
+  `scripts: …`, `CLAUDE.md: …`, `treewide: …` for cross-cutting changes.
+- Commit or push only when asked.
