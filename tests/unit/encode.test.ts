@@ -23,7 +23,7 @@ import {
   writeU8,
   writeUcs2BEPadded,
   writeVolumeDate,
-} from "../src/encode.ts";
+} from "../../src/encode.ts";
 
 /** Runs `write` on a zeroed buffer of `size` bytes and returns it as hex. */
 function hex(size: number, write: (buf: Uint8Array) => void): string {

@@ -4,20 +4,20 @@
 import assert from "node:assert/strict";
 import { describe, test } from "node:test";
 
-import { encodeUcs2BE } from "../src/encode.ts";
+import { encodeUcs2BE } from "../../src/encode.ts";
 import {
   DOT,
   DOTDOT,
   type DirectoryRecordFields,
   directoryRecord,
-} from "../src/records.ts";
+} from "../../src/records.ts";
 import {
   MODE_FILE,
   RR_PX,
   RR_TF,
   pxEntry,
   rrEntry,
-} from "../src/rockridge.ts";
+} from "../../src/rockridge.ts";
 
 const toHex = (bytes: Uint8Array): string => Buffer.from(bytes).toString("hex");
 const ascii = (value: string): Uint8Array => new Uint8Array(Buffer.from(value, "ascii"));

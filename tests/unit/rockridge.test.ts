@@ -17,7 +17,7 @@ import {
   rrEntry,
   spEntry,
   tfEntry,
-} from "../src/rockridge.ts";
+} from "../../src/rockridge.ts";
 
 const toHex = (bytes: Uint8Array): string => Buffer.from(bytes).toString("hex");
 

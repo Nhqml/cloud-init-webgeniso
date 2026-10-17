@@ -3,13 +3,13 @@
 
 // Unit tests for buildSeedIso: input handling and image-wide invariants that
 // need no ISO parser. Reading the image back is covered by the integration
-// tests in test/integration/, which use a real ISO reader.
+// tests in tests/integration/, which use real ISO readers.
 
 import assert from "node:assert/strict";
 import { describe, test } from "node:test";
 
-import { SECTOR_SIZE } from "../src/encode.ts";
-import { type SeedFiles, buildSeedIso } from "../src/iso.ts";
+import { SECTOR_SIZE } from "../../src/encode.ts";
+import { type SeedFiles, buildSeedIso } from "../../src/iso.ts";
 
 const toHex = (bytes: Uint8Array): string => Buffer.from(bytes).toString("hex");
 const ascii = (value: string): string => Buffer.from(value, "ascii").toString("hex");

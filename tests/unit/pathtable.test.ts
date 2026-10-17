@@ -4,8 +4,8 @@
 import assert from "node:assert/strict";
 import { describe, test } from "node:test";
 
-import { ROOT_PATH_TABLE_SIZE, rootPathTable } from "../src/pathtable.ts";
-import { DOT } from "../src/records.ts";
+import { ROOT_PATH_TABLE_SIZE, rootPathTable } from "../../src/pathtable.ts";
+import { DOT } from "../../src/records.ts";
 
 const toHex = (bytes: Uint8Array): string => Buffer.from(bytes).toString("hex");
 

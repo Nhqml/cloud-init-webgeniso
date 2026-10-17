@@ -4,14 +4,14 @@
 import assert from "node:assert/strict";
 import { describe, test } from "node:test";
 
-import { SECTOR_SIZE, encodeUcs2BE } from "../src/encode.ts";
-import { DOT, directoryRecord } from "../src/records.ts";
+import { SECTOR_SIZE, encodeUcs2BE } from "../../src/encode.ts";
+import { DOT, directoryRecord } from "../../src/records.ts";
 import {
   type VolumeDescriptorFields,
   jolietVolumeDescriptor,
   primaryVolumeDescriptor,
   terminatorVolumeDescriptor,
-} from "../src/volume.ts";
+} from "../../src/volume.ts";
 
 const toHex = (bytes: Uint8Array): string => Buffer.from(bytes).toString("hex");
 const ascii = (value: string): string => Buffer.from(value, "ascii").toString("hex");
