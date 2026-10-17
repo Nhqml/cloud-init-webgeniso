@@ -37,9 +37,11 @@ ISO features unless asked.
      function signatures, with bodies that only
      `throw new Error("not implemented")`. Typecheck must pass.
   3. Run the tests and watch them fail on the stubs, not on missing modules.
-  4. Only then write the function or method bodies. This includes changes to existing functions (add or change the test
-  first) and exporting a previously private function. Helpers inside `test/`
-  are exempt: the tests that use them validate them.
+  4. Only then write the function or method bodies.
+
+  This also applies to changes to existing functions (add or change the test
+  first) and to exporting a previously private function. Helpers inside
+  `test/` are exempt: the tests that use them validate them.
 
 ## Format decisions
 
@@ -54,10 +56,20 @@ Copy genisoimage's behaviour for `-volid cidata -rational-rock -joliet`:
 - Rock Ridge as `-rational-rock`: uid and gid 0, files `0444`, directories
   `0555`.
 
+Our own choices, where matching genisoimage would make output host- or
+time-dependent:
+
+- All dates default to the Unix epoch (1970-01-01T00:00:00Z), so the same
+  files always give the same image. Callers pass `date` to override.
+- System, publisher, preparer and application identifiers are left blank.
+
 ## Tooling
 
-- Tool versions are pinned in `mise.toml` (Node, pnpm). Use mise for every
-  dev tool.
+- Tool versions are pinned in `mise.toml` (Node, pnpm, libarchive). Use mise
+  for every dev tool; never rely on what the OS ships.
+- Integration tests (`test/integration/`) read images back with `bsdtar` from
+  libarchive (`conda:libarchive` in mise). Run tests inside the mise
+  environment (`mise exec -- pnpm test`, or a shell with mise activated).
 - Package manager: pnpm.
 - TypeScript runs directly in Node (type stripping), so source must stay
   erasable: no `enum`, `namespace` or parameter properties
@@ -77,6 +89,7 @@ pnpm build           # emit dist/ (JS + .d.ts) from src/
 
 ```
 src/       library source (published as dist/)
-test/      node:test tests and fixtures
+test/      node:test unit tests
+test/integration/  tests reading images back with external tools
 scripts/   dev scripts (run with node directly)
 ```
