@@ -55,15 +55,6 @@ export function writeU8(buf: Uint8Array, offset: number, value: number): void {
   buf[offset] = value;
 }
 
-/** 8-bit signed, two's complement (7.1.2). */
-export function writeI8(buf: Uint8Array, offset: number, value: number): void {
-  if (!Number.isInteger(value) || value < -128 || value > 127) {
-    throw new RangeError(`i8 out of range: ${value}`);
-  }
-  assertFits(buf, offset, 1);
-  buf[offset] = value & 0xff;
-}
-
 /** 16-bit little-endian (7.2.1). */
 export function writeU16LE(buf: Uint8Array, offset: number, value: number): void {
   assertUint(value, 0xffff, "u16");
@@ -148,46 +139,6 @@ export function writePaddedAscii(
   assertFits(buf, offset, length);
   writeAscii(buf, offset, value);
   buf.fill(0x20, offset + value.length, offset + length);
-}
-
-// --- Character strings (7.4, 8.4) ------------------------------------------
-
-/** d-characters (7.4.1): upper-case letters, digits and underscore. */
-const D_CHARACTERS = /^[A-Z0-9_]*$/;
-
-/** a-characters (7.4.1): d-characters plus space and some punctuation. */
-const A_CHARACTERS = /^[A-Z0-9_ !"%&'()*+,\-./:;<=>?]*$/;
-
-/**
- * Writes `value` into a fixed-length field of `length` bytes, padded with
- * spaces (0x20), after checking it uses only d-characters.
- */
-export function writeDString(
-  buf: Uint8Array,
-  offset: number,
-  length: number,
-  value: string,
-): void {
-  if (!D_CHARACTERS.test(value)) {
-    throw new RangeError(`not a d-character string: ${JSON.stringify(value)}`);
-  }
-  writePaddedAscii(buf, offset, length, value);
-}
-
-/**
- * Writes `value` into a fixed-length field of `length` bytes, padded with
- * spaces (0x20), after checking it uses only a-characters.
- */
-export function writeAString(
-  buf: Uint8Array,
-  offset: number,
-  length: number,
-  value: string,
-): void {
-  if (!A_CHARACTERS.test(value)) {
-    throw new RangeError(`not an a-character string: ${JSON.stringify(value)}`);
-  }
-  writePaddedAscii(buf, offset, length, value);
 }
 
 // --- Joliet (UCS-2 big-endian) ---------------------------------------------

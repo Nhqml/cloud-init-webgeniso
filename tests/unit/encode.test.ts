@@ -8,10 +8,7 @@ import {
   SECTOR_SIZE,
   encodeUcs2BE,
   sectorsFor,
-  writeAString,
   writeAscii,
-  writeDString,
-  writeI8,
   writePaddedAscii,
   writeRecordDate,
   writeU16BE,
@@ -48,13 +45,9 @@ describe("sectorsFor", () => {
 });
 
 describe("integers", () => {
-  test("u8 and i8 (7.1.1, 7.1.2)", () => {
+  test("u8 (7.1.1)", () => {
     assert.equal(hex(1, (b) => writeU8(b, 0, 0xab)), "ab");
-    assert.equal(hex(1, (b) => writeI8(b, 0, -1)), "ff");
-    assert.equal(hex(1, (b) => writeI8(b, 0, -48)), "d0");
     assert.throws(() => writeU8(new Uint8Array(1), 0, 256), RangeError);
-    assert.throws(() => writeI8(new Uint8Array(1), 0, 128), RangeError);
-    assert.throws(() => writeI8(new Uint8Array(1), 0, -129), RangeError);
   });
 
   // ECMA-119 7.2: the value 0x1234.
@@ -114,29 +107,6 @@ describe("character strings", () => {
     assert.throws(() => writePaddedAscii(new Uint8Array(8), 0, 3, "abcd"), RangeError);
     assert.throws(() => writePaddedAscii(new Uint8Array(8), 0, 8, "é"), RangeError);
     assert.throws(() => writePaddedAscii(new Uint8Array(4), 2, 4, "a"), RangeError);
-  });
-
-  test("d-strings are space-padded (7.4.1)", () => {
-    assert.equal(hex(8, (b) => writeDString(b, 0, 8, "CIDATA")), "4349444154412020");
-    assert.equal(hex(3, (b) => writeDString(b, 0, 3, "")), "202020");
-  });
-
-  test("d-strings reject anything but A-Z, 0-9 and _", () => {
-    const buf = new Uint8Array(32);
-    assert.throws(() => writeDString(buf, 0, 32, "cidata"), RangeError);
-    assert.throws(() => writeDString(buf, 0, 32, "USER-DATA"), RangeError);
-    assert.throws(() => writeDString(buf, 0, 32, "A B"), RangeError);
-  });
-
-  test("a-strings allow space and punctuation", () => {
-    assert.equal(hex(6, (b) => writeAString(b, 0, 6, "A-B. ")), "412d422e2020");
-    assert.throws(() => writeAString(new Uint8Array(8), 0, 8, "abc"), RangeError);
-    assert.throws(() => writeAString(new Uint8Array(8), 0, 8, "A#B"), RangeError);
-  });
-
-  test("strings longer than their field throw", () => {
-    assert.throws(() => writeDString(new Uint8Array(8), 0, 3, "ABCD"), RangeError);
-    assert.throws(() => writeAString(new Uint8Array(4), 2, 3, "AB"), RangeError);
   });
 
   test("raw ASCII is written as is, without padding", () => {
