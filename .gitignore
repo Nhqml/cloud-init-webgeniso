@@ -1,0 +1,10 @@
+node_modules/
+dist/
+coverage/
+*.iso
+
+# Editors / OS
+.DS_Store
+*.swp
+.vscode/
+.idea/
