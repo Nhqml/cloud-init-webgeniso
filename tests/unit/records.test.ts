@@ -18,21 +18,16 @@ import {
   pxEntry,
   rrEntry,
 } from "../../src/rockridge.ts";
-
-const toHex = (bytes: Uint8Array): string => Buffer.from(bytes).toString("hex");
-const ascii = (value: string): Uint8Array => new Uint8Array(Buffer.from(value, "ascii"));
-
-const date = new Date(Date.UTC(2026, 9, 17, 8, 5, 9));
-const recordDate = "7e0a1108050900";
+import { DATE, DATE_RECORD_HEX, asciiBytes, toHex } from "../support/bytes.ts";
 
 /** A regular file record; tests override only the fields they care about. */
 function recordWithDefaults(overrides: Partial<DirectoryRecordFields> = {}): Uint8Array {
   return directoryRecord({
     extent: 0x1c,
     dataLength: 42,
-    date,
+    date: DATE,
     directory: false,
-    identifier: ascii("USER_DAT.;1"),
+    identifier: asciiBytes("USER_DAT.;1"),
     ...overrides,
   });
 }
@@ -52,13 +47,13 @@ describe("directoryRecord (9.1)", () => {
         "00" + // Extended attribute record length.
         "1c0000000000001c" + // Location of extent, both-byte order.
         "2a0000000000002a" + // Data length, both-byte order.
-        recordDate + // Recording date and time.
+        DATE_RECORD_HEX + // Recording date and time.
         "00" + // File flags: regular file.
         "00" + // File unit size: not interleaved.
         "00" + // Interleave gap size.
         "01000001" + // Volume sequence number 1, both-byte order.
         "0b" + // Length of file identifier.
-        toHex(ascii("USER_DAT.;1")),
+        toHex(asciiBytes("USER_DAT.;1")),
     );
   });
 
@@ -66,7 +61,7 @@ describe("directoryRecord (9.1)", () => {
     const record = directoryRecord({
       extent: 23,
       dataLength: 2048,
-      date,
+      date: DATE,
       directory: true,
       identifier: DOT,
     });
@@ -98,7 +93,7 @@ describe("directoryRecord (9.1)", () => {
     const record = directoryRecord({
       extent: 23,
       dataLength: 2048,
-      date,
+      date: DATE,
       directory: true,
       identifier: DOT,
       systemUse,
@@ -113,7 +108,7 @@ describe("directoryRecord (9.1)", () => {
     for (let idLength = 1; idLength <= 12; idLength++) {
       for (let suLength = 0; suLength <= 5; suLength++) {
         const record = recordWithDefaults({
-          identifier: ascii("A".repeat(idLength)),
+          identifier: asciiBytes("A".repeat(idLength)),
           systemUse: new Uint8Array(suLength),
         });
         assert.equal(record.length % 2, 0, `id ${idLength}, system use ${suLength}`);
@@ -142,7 +137,7 @@ describe("directoryRecord (9.1)", () => {
   });
 
   test("rejects an empty identifier", () => {
-    assert.throws(() => recordWithDefaults({ identifier: ascii("") }), RangeError);
+    assert.throws(() => recordWithDefaults({ identifier: asciiBytes("") }), RangeError);
   });
 
   test("rejects extents and sizes that don't fit 32 bits", () => {

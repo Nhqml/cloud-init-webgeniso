@@ -12,9 +12,8 @@ import {
   primaryVolumeDescriptor,
   terminatorVolumeDescriptor,
 } from "../../src/volume.ts";
+import { DATE, asciiHex, toHex } from "../support/bytes.ts";
 
-const toHex = (bytes: Uint8Array): string => Buffer.from(bytes).toString("hex");
-const ascii = (value: string): string => Buffer.from(value, "ascii").toString("hex");
 const ucs2 = (value: string): string => toHex(encodeUcs2BE(value));
 const zeros = (length: number): string => "00".repeat(length);
 const asciiSpaces = (length: number): string => "20".repeat(length);
@@ -24,14 +23,13 @@ const ucs2Spaces = (chars: number): string => "0020".repeat(chars);
 const field = (descriptor: Uint8Array, offset: number, length: number): string =>
   toHex(descriptor.subarray(offset, offset + length));
 
-const date = new Date(Date.UTC(2026, 9, 17, 8, 5, 9));
-const volumeDate = ascii("2026101708050900") + "00";
-const notSpecifiedDate = ascii("0000000000000000") + "00";
+const volumeDate = asciiHex("2026101708050900") + "00";
+const notSpecifiedDate = asciiHex("0000000000000000") + "00";
 
 const rootRecord = directoryRecord({
   extent: 23,
   dataLength: SECTOR_SIZE,
-  date,
+  date: DATE,
   directory: true,
   identifier: DOT,
 });
@@ -43,7 +41,7 @@ const fields: VolumeDescriptorFields = {
   lPathTableExtent: 0x00010203,
   mPathTableExtent: 0x04050607,
   rootDirectoryRecord: rootRecord,
-  date,
+  date: DATE,
 };
 
 describe("primaryVolumeDescriptor (8.4)", () => {
@@ -56,7 +54,7 @@ describe("primaryVolumeDescriptor (8.4)", () => {
 
   test("starts with type 1, CD001 and version 1", () => {
     assert.equal(field(pvd(), 0, 1), "01"); // Volume descriptor type.
-    assert.equal(field(pvd(), 1, 5), ascii("CD001")); // Standard identifier.
+    assert.equal(field(pvd(), 1, 5), asciiHex("CD001")); // Standard identifier.
     assert.equal(field(pvd(), 6, 1), "01"); // Volume descriptor version.
     assert.equal(field(pvd(), 7, 1), "00"); // Unused.
   });
@@ -66,7 +64,7 @@ describe("primaryVolumeDescriptor (8.4)", () => {
   });
 
   test("writes the volume identifier as given, lowercase", () => {
-    assert.equal(field(pvd(), 40, 32), ascii("cidata") + asciiSpaces(26));
+    assert.equal(field(pvd(), 40, 32), asciiHex("cidata") + asciiSpaces(26));
   });
 
   test("writes the volume space size in both-byte order", () => {
@@ -129,7 +127,7 @@ describe("primaryVolumeDescriptor (8.4)", () => {
     const withSystemUse = directoryRecord({
       extent: 23,
       dataLength: SECTOR_SIZE,
-      date,
+      date: DATE,
       directory: true,
       identifier: DOT,
       systemUse: new Uint8Array(4),
@@ -150,7 +148,7 @@ describe("jolietVolumeDescriptor (8.5, Joliet)", () => {
 
   test("starts with type 2, CD001, version 1 and no volume flags", () => {
     assert.equal(field(svd(), 0, 1), "02"); // Supplementary volume descriptor.
-    assert.equal(field(svd(), 1, 5), ascii("CD001"));
+    assert.equal(field(svd(), 1, 5), asciiHex("CD001"));
     assert.equal(field(svd(), 6, 1), "01");
     assert.equal(field(svd(), 7, 1), "00"); // Volume flags.
   });
@@ -161,7 +159,7 @@ describe("jolietVolumeDescriptor (8.5, Joliet)", () => {
   });
 
   test("declares Joliet UCS-2 level 3 with the %/E escape sequence", () => {
-    assert.equal(field(svd(), 88, 32), ascii("%/E") + zeros(29));
+    assert.equal(field(svd(), 88, 32), asciiHex("%/E") + zeros(29));
   });
 
   test("shares the numeric fields with the primary descriptor", () => {
@@ -213,7 +211,7 @@ describe("terminatorVolumeDescriptor (8.3)", () => {
   test("is type 255, CD001, version 1, then zeros", () => {
     const terminator = terminatorVolumeDescriptor();
     assert.equal(terminator.length, SECTOR_SIZE);
-    assert.equal(field(terminator, 0, 7), "ff" + ascii("CD001") + "01");
+    assert.equal(field(terminator, 0, 7), "ff" + asciiHex("CD001") + "01");
     assert.equal(field(terminator, 7, SECTOR_SIZE - 7), zeros(SECTOR_SIZE - 7));
   });
 });

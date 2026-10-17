@@ -18,11 +18,7 @@ import {
   spEntry,
   tfEntry,
 } from "../../src/rockridge.ts";
-
-const toHex = (bytes: Uint8Array): string => Buffer.from(bytes).toString("hex");
-
-const date = new Date(Date.UTC(2026, 9, 17, 8, 5, 9));
-const recordDate = "7e0a1108050900";
+import { DATE, DATE_RECORD_HEX, toHex } from "../support/bytes.ts";
 
 describe("modes for -rational-rock", () => {
   test("files are r--r--r--, directories r-xr-xr-x", () => {
@@ -93,7 +89,7 @@ describe("RRIP entries", () => {
 
   // RRIP 1.09 4.1.6: flags MODIFY | ACCESS | ATTRIBUTES, 7-byte dates.
   test("TF records modification, access and attribute-change times", () => {
-    assert.equal(toHex(tfEntry(date)), "54461a01" + "0e" + recordDate.repeat(3));
+    assert.equal(toHex(tfEntry(DATE)), "54461a01" + "0e" + DATE_RECORD_HEX.repeat(3));
   });
 
   // RRIP 1.09 4.1.4: flags 0, then the name, no terminator.

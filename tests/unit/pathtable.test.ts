@@ -6,8 +6,7 @@ import { describe, test } from "node:test";
 
 import { ROOT_PATH_TABLE_SIZE, rootPathTable } from "../../src/pathtable.ts";
 import { DOT } from "../../src/records.ts";
-
-const toHex = (bytes: Uint8Array): string => Buffer.from(bytes).toString("hex");
+import { toHex } from "../support/bytes.ts";
 
 describe("rootPathTable (9.4)", () => {
   // Our trees only have the root directory, so each path table holds a

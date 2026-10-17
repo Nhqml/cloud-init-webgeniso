@@ -10,16 +10,12 @@ import { describe, test } from "node:test";
 
 import { SECTOR_SIZE } from "../../src/encode.ts";
 import { type SeedFiles, buildSeedIso } from "../../src/iso.ts";
-
-const toHex = (bytes: Uint8Array): string => Buffer.from(bytes).toString("hex");
-const ascii = (value: string): string => Buffer.from(value, "ascii").toString("hex");
+import { DATE, asciiHex, toHex } from "../support/bytes.ts";
 
 const files: SeedFiles = {
   "user-data": "#cloud-config\n",
   "meta-data": "instance-id: test\n",
 };
-
-const date = new Date(Date.UTC(2026, 9, 17, 8, 5, 9));
 
 /** Bytes of logical sector `lba` of `image`. */
 const sector = (image: Uint8Array, lba: number): Uint8Array =>
@@ -40,9 +36,9 @@ describe("buildSeedIso: image layout", () => {
 
   test("has the primary, Joliet and terminator descriptors at sectors 16-18", () => {
     const image = buildSeedIso(files);
-    assert.equal(toHex(sector(image, 16).subarray(0, 7)), "01" + ascii("CD001") + "01");
-    assert.equal(toHex(sector(image, 17).subarray(0, 7)), "02" + ascii("CD001") + "01");
-    assert.equal(toHex(sector(image, 18).subarray(0, 7)), "ff" + ascii("CD001") + "01");
+    assert.equal(toHex(sector(image, 16).subarray(0, 7)), "01" + asciiHex("CD001") + "01");
+    assert.equal(toHex(sector(image, 17).subarray(0, 7)), "02" + asciiHex("CD001") + "01");
+    assert.equal(toHex(sector(image, 18).subarray(0, 7)), "ff" + asciiHex("CD001") + "01");
   });
 
   test("declares its own size as the volume space size", () => {
@@ -57,7 +53,7 @@ describe("buildSeedIso: image layout", () => {
   test("labels the volume cidata", () => {
     const image = buildSeedIso(files);
     const pvdLabel = sector(image, 16).subarray(40, 72);
-    assert.equal(toHex(pvdLabel), ascii("cidata") + "20".repeat(26));
+    assert.equal(toHex(pvdLabel), asciiHex("cidata") + "20".repeat(26));
   });
 
   test("grows with the file data", () => {
@@ -69,7 +65,7 @@ describe("buildSeedIso: image layout", () => {
 
 describe("buildSeedIso: determinism", () => {
   test("same inputs give identical bytes", () => {
-    assert.deepEqual(buildSeedIso(files, { date }), buildSeedIso(files, { date }));
+    assert.deepEqual(buildSeedIso(files, { date: DATE }), buildSeedIso(files, { date: DATE }));
   });
 
   test("defaults the date to the Unix epoch", () => {
@@ -77,7 +73,7 @@ describe("buildSeedIso: determinism", () => {
   });
 
   test("the date changes the output", () => {
-    assert.notDeepEqual(buildSeedIso(files), buildSeedIso(files, { date }));
+    assert.notDeepEqual(buildSeedIso(files), buildSeedIso(files, { date: DATE }));
   });
 
   test("rejects an invalid date", () => {
