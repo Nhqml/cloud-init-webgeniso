@@ -4,3 +4,4 @@ pnpm = "12.14.0"
 
 # For integration testing
 "conda:libarchive" = "3.8.9"
+lima = "2.2.1"

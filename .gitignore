@@ -8,3 +8,9 @@ coverage/
 *.swp
 .vscode/
 .idea/
+
+# Lima VM for the e2e tests
+.lima/
+
+# Python
+__pycache__/
