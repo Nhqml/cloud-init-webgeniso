@@ -61,6 +61,7 @@ def describe_descriptor(vd, decode):
         "abstract_file_identifier": decode(vd.abstract_file_identifier),
         "bibliographic_file_identifier": decode(vd.bibliographic_file_identifier),
         "file_structure_version": vd.file_structure_version,
+        "application_use": vd.application_use,
         "escape_sequences": getattr(vd, "escape_sequences", b""),
     }
 

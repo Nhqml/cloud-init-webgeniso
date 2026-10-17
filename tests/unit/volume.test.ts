@@ -110,10 +110,11 @@ describe("primaryVolumeDescriptor (8.4)", () => {
     assert.equal(field(pvd(), 864, 17), volumeDate); // Effective.
   });
 
-  test("ends with file structure version 1 and zeros", () => {
+  test("ends with file structure version 1, blank application use and zeros", () => {
     assert.equal(field(pvd(), 881, 1), "01"); // File structure version.
     assert.equal(field(pvd(), 882, 1), "00"); // Reserved.
-    assert.equal(field(pvd(), 883, 512), zeros(512)); // Application use.
+    // Application use: spaces, like genisoimage and pycdlib-genisoimage.
+    assert.equal(field(pvd(), 883, 512), asciiSpaces(512));
     assert.equal(field(pvd(), 1395, 653), zeros(653)); // Reserved.
   });
 
@@ -195,7 +196,9 @@ describe("jolietVolumeDescriptor (8.5, Joliet)", () => {
     assert.equal(field(svd(), 864, 17), volumeDate);
     assert.equal(field(svd(), 881, 1), "01");
     assert.equal(field(svd(), 882, 1), "00");
-    assert.equal(field(svd(), 883, 1165), zeros(1165));
+    // Application use is ASCII spaces in Joliet too, not UCS-2.
+    assert.equal(field(svd(), 883, 512), asciiSpaces(512));
+    assert.equal(field(svd(), 1395, 653), zeros(653));
   });
 
   test("rejects a volume identifier longer than 16 UCS-2 characters", () => {

@@ -94,6 +94,10 @@ function volumeDescriptor(
   writeVolumeDate(descriptor, 847, null); // Expiration: never.
   writeVolumeDate(descriptor, 864, fields.date); // Effective.
   writeU8(descriptor, 881, 1); // File structure version.
+  // Application use (512 bytes): its content is up to the writer; fill it
+  // with ASCII spaces, like genisoimage and pycdlib-genisoimage, in both
+  // descriptors.
+  descriptor.fill(0x20, 883, 883 + 512);
   return descriptor;
 }
 
