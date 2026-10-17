@@ -1,0 +1,29 @@
+{
+  "name": "cloud-init-webgeniso",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Generate cloud-init NoCloud seed ISO images in the browser",
+  "license": "AGPL-3.0-or-later",
+  "author": "Kenji Gaillac",
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "typecheck": "tsc --noEmit",
+    "test": "node --test \"test/**/*.test.ts\"",
+    "check:headers": "node scripts/check-license-headers.ts",
+    "check": "pnpm typecheck && pnpm check:headers && pnpm test"
+  },
+  "devDependencies": {
+    "@types/node": "^26.6.5",
+    "typescript": "^7.0.2"
+  }
+}
