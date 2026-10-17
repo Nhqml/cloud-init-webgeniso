@@ -6,6 +6,12 @@
 // one complete entry: 2-byte signature, length, version 1, then its data.
 // We write the RRIP 1.09 forms (36-byte PX, "RR" entry, RRIP_1991A), like
 // genisoimage does.
+//
+// Don't "upgrade" to RRIP 1.12 (44-byte PX, "IEEE_P1282", no "RR" entry):
+// readers, including the Linux kernel used by cloud-init, handle both
+// versions the same, so it would gain nothing. It would only add an inode
+// number to track and stop our output from matching genisoimage's. We keep
+// it simple on purpose.
 
 import {
   writeAscii,
