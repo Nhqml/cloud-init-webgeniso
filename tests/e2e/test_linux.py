@@ -3,7 +3,7 @@
 # Copyright (C) 2026 Kenji Gaillac
 
 # /// script
-# requires-python = ">=3.10"
+# requires-python = ">=3.11"
 # dependencies = []
 # ///
 

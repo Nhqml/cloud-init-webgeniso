@@ -74,7 +74,8 @@ time-dependent:
   Use mise for every dev tool; never rely on what the OS ships. Run commands
   inside the mise environment (`mise exec -- pnpm test`, or a shell with mise
   activated).
-- Exception: Python and uv are expected on the host, not in `mise.toml`.
+- Exception: Python (3.11+) and uv are expected on the host, not in
+  `mise.toml`.
 - Unit tests are TypeScript (`node:test`). Integration and e2e tests are
   Python `unittest` files. Each Python file meant to be run (tests and
   scripts) is an executable PEP 723 script with the shebang
