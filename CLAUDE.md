@@ -9,7 +9,7 @@ genisoimage -output seed.img -volid cidata -rational-rock -joliet user-data meta
 ```
 
 Scope is deliberately narrow: flat root directory, only the files `user-data`,
-`meta-data`, `network-config`, `vendor-data`, volume label `CIDATA`, Rock Ridge
+`meta-data`, `network-config`, `vendor-data`, volume label `cidata`, Rock Ridge
 and Joliet. No subdirectories, boot images or large files. Don't add general
 ISO features unless asked.
 
@@ -31,6 +31,24 @@ ISO features unless asked.
   `TextEncoder`), no `node:*` imports. The build config sets `types: []` to
   catch this.
 - Output must be deterministic: same inputs and same date give identical bytes.
+- Test-driven development for everything in `src/`: write the tests first,
+  run them and watch them fail, and only then write the function or method
+  body. This includes changes to existing functions (add or change the test
+  first) and exporting a previously private function. Helpers inside `test/`
+  are exempt: the tests that use them validate them.
+
+## Format decisions
+
+Copy genisoimage's behaviour for `-volid cidata -rational-rock -joliet`:
+
+- Volume identifier is written as given, lowercase `cidata`, in both the
+  Primary and the Joliet volume descriptors (not strict d-characters, but
+  what genisoimage does and what cloud-init expects).
+- Primary-tree file names use genisoimage's default 8.3 mapping:
+  `META_DAT.;1`, `NETWORK_.;1`, `USER_DAT.;1`, `VENDOR_D.;1`. Rock Ridge `NM`
+  entries and Joliet carry the real names.
+- Rock Ridge as `-rational-rock`: uid and gid 0, files `0444`, directories
+  `0555`.
 
 ## Tooling
 
