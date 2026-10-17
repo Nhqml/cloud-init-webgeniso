@@ -129,7 +129,12 @@ export function writeAscii(buf: Uint8Array, offset: number, value: string): void
   }
 }
 
-function writePaddedAscii(
+/**
+ * Writes ASCII `value` into a fixed-length field of `length` bytes, padded
+ * with spaces (0x20), with no character-set check. Used where genisoimage
+ * writes user text as is, such as the lowercase `cidata` volume identifier.
+ */
+export function writePaddedAscii(
   buf: Uint8Array,
   offset: number,
   length: number,

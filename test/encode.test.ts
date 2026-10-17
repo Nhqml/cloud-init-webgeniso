@@ -12,6 +12,7 @@ import {
   writeAscii,
   writeDString,
   writeI8,
+  writePaddedAscii,
   writeRecordDate,
   writeU16BE,
   writeU16Both,
@@ -97,6 +98,24 @@ describe("integers", () => {
 });
 
 describe("character strings", () => {
+  test("padded ASCII allows lowercase, for the genisoimage-style label", () => {
+    assert.equal(hex(8, (b) => writePaddedAscii(b, 0, 8, "cidata")), "6369646174612020");
+  });
+
+  test("padded ASCII: empty string writes only padding", () => {
+    assert.equal(hex(3, (b) => writePaddedAscii(b, 0, 3, "")), "202020");
+  });
+
+  test("padded ASCII writes only inside its field", () => {
+    assert.equal(hex(5, (b) => writePaddedAscii(b, 1, 3, "ab")), "0061622000");
+  });
+
+  test("padded ASCII rejects overflow and non-ASCII", () => {
+    assert.throws(() => writePaddedAscii(new Uint8Array(8), 0, 3, "abcd"), RangeError);
+    assert.throws(() => writePaddedAscii(new Uint8Array(8), 0, 8, "é"), RangeError);
+    assert.throws(() => writePaddedAscii(new Uint8Array(4), 2, 4, "a"), RangeError);
+  });
+
   test("d-strings are space-padded (7.4.1)", () => {
     assert.equal(hex(8, (b) => writeDString(b, 0, 8, "CIDATA")), "4349444154412020");
     assert.equal(hex(3, (b) => writeDString(b, 0, 3, "")), "202020");
