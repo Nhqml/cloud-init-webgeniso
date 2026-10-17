@@ -275,7 +275,7 @@ function primaryDirectory(files: PlacedFile[], date: Date, erLength: number): Ui
   ]);
 }
 
-/** The Joliet root directory: ".", ".." and the files' UCS-2 names. */
+/** The Joliet root directory: ".", ".." and the files' UCS-2 names, without a ";1" version suffix. */
 function jolietDirectory(files: PlacedFile[], date: Date): Uint8Array {
   const directory = (identifier: Uint8Array): Uint8Array =>
     directoryRecord({
@@ -295,7 +295,7 @@ function jolietDirectory(files: PlacedFile[], date: Date): Uint8Array {
         dataLength: file.data.length,
         date,
         directory: false,
-        identifier: encodeUcs2BE(`${file.name};1`),
+        identifier: encodeUcs2BE(file.name),
       }),
     ),
   ]);
