@@ -138,7 +138,9 @@ E2E_VM_TEARDOWN=keep pnpm test:e2e  # e2e tests, leaving the VM running
 ```
 src/lib/            the ISO writer (internal library)
 src/web/            the web page (Vite root): index.html, main.ts (DOM wiring),
-                    seed.ts and theme.ts (logic), style.css
+                    seed.ts, theme.ts and jingle.ts (logic), sound.ts (Web
+                    Audio player for the Jukebox jingle, loaded on demand),
+                    style.css
 src/web/styles/     base.css (shared layout) and one stylesheet per theme;
                     only base + default ship with the page, jukebox/windoze load
                     on demand

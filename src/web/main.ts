@@ -227,6 +227,24 @@ function setUpThemePicker(): void {
   });
 }
 
+/**
+ * Plays the Jukebox theme's disco jingle. The audio context is created right
+ * away, during the click, as some browsers only let audio start inside a
+ * user gesture; the player itself is loaded on first use. Sound is a bonus:
+ * if anything fails, the download has already happened, so stay silent.
+ */
+function playDiscoJingle(): void {
+  let context: AudioContext;
+  try {
+    context = new AudioContext();
+  } catch {
+    return; // No Web Audio.
+  }
+  import("./sound.ts")
+    .then((sound) => sound.playDiscoJingle(context))
+    .catch(() => void context.close());
+}
+
 function main(): void {
   setUpThemePicker();
   const instanceId = element<HTMLInputElement>(document, "#instance-id");
@@ -289,6 +307,7 @@ function main(): void {
         vendorData: editor("vendor-data").content(),
       });
       download(buildSeedIso(files), fileName.value.trim() || isoFileName(instanceId.value));
+      if (document.documentElement.dataset.theme === "jukebox") playDiscoJingle();
     } catch (error) {
       show(downloadError, `Couldn't build the image: ${(error as Error).message}`);
     }
