@@ -4,15 +4,15 @@
 import assert from "node:assert/strict";
 import { describe, test } from "node:test";
 
-import { SECTOR_SIZE, encodeUcs2BE } from "../../src/encode.ts";
-import { DOT, directoryRecord } from "../../src/records.ts";
+import { SECTOR_SIZE, encodeUcs2BE } from "../../../src/lib/encode.ts";
+import { DOT, directoryRecord } from "../../../src/lib/records.ts";
 import {
   type VolumeDescriptorFields,
   jolietVolumeDescriptor,
   primaryVolumeDescriptor,
   terminatorVolumeDescriptor,
-} from "../../src/volume.ts";
-import { DATE, asciiHex, toHex } from "../support/bytes.ts";
+} from "../../../src/lib/volume.ts";
+import { DATE, asciiHex, toHex } from "../../support/bytes.ts";
 
 const ucs2 = (value: string): string => toHex(encodeUcs2BE(value));
 const zeros = (length: number): string => "00".repeat(length);

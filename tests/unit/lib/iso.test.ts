@@ -8,9 +8,9 @@
 import assert from "node:assert/strict";
 import { describe, test } from "node:test";
 
-import { SECTOR_SIZE } from "../../src/encode.ts";
-import { type SeedFiles, buildSeedIso } from "../../src/iso.ts";
-import { DATE, asciiHex, toHex } from "../support/bytes.ts";
+import { SECTOR_SIZE } from "../../../src/lib/encode.ts";
+import { type SeedFiles, buildSeedIso } from "../../../src/lib/iso.ts";
+import { DATE, asciiHex, toHex } from "../../support/bytes.ts";
 
 const files: SeedFiles = {
   "user-data": "#cloud-config\n",

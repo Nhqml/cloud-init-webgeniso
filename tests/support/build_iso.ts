@@ -11,7 +11,7 @@
 
 import { readFileSync } from "node:fs";
 
-import { buildSeedIso, type SeedFiles } from "../../src/iso.ts";
+import { buildSeedIso, type SeedFiles } from "../../src/lib/iso.ts";
 
 interface Request {
   files: Record<string, string>;

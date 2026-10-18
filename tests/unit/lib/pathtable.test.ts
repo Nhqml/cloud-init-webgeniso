@@ -4,9 +4,9 @@
 import assert from "node:assert/strict";
 import { describe, test } from "node:test";
 
-import { ROOT_PATH_TABLE_SIZE, rootPathTable } from "../../src/pathtable.ts";
-import { DOT } from "../../src/records.ts";
-import { toHex } from "../support/bytes.ts";
+import { ROOT_PATH_TABLE_SIZE, rootPathTable } from "../../../src/lib/pathtable.ts";
+import { DOT } from "../../../src/lib/records.ts";
+import { toHex } from "../../support/bytes.ts";
 
 describe("rootPathTable (9.4)", () => {
   // Our trees only have the root directory, so each path table holds a

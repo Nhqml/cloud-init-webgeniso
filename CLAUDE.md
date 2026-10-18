@@ -1,7 +1,8 @@
 # cloud-init-webgeniso
 
-TypeScript library (and later a static web page) that builds cloud-init
-NoCloud seed ISO images in the browser. Output must match what this command
+Static web page that builds cloud-init NoCloud seed ISO images in the
+browser, with no server. The ISO writer is an internal TypeScript library
+(`src/lib/`, not published on its own; the page is its only consumer). Output must match what this command
 produces, structurally:
 
 ```sh
@@ -15,26 +16,32 @@ ISO features unless asked.
 
 ## Rules
 
-- Every source file (`.ts`, `.js`, `.mjs`, `.cjs`, `.py`) must start with
-  exactly:
+- Every source file (`.ts`, `.js`, `.mjs`, `.cjs`, `.py`, `.html`, `.css`)
+  must start with exactly these two lines, each in its own comment of the
+  file's syntax:
 
   ```ts
   // SPDX-License-Identifier: AGPL-3.0-or-later
   // Copyright (C) 2026 Kenji Gaillac
   ```
 
-  with `#` instead of `//` in Python files. A shebang and blank lines may
-  come before it, but the two lines must be consecutive.
-  `pnpm check:headers` enforces this.
+  `#` in Python, `<!-- … -->` in HTML, `/* … */` in CSS. A shebang (or
+  `<!doctype html>`) and blank lines may come before them, but the two lines
+  must be consecutive. `pnpm check:headers` enforces this.
 - The project is AGPL-3.0-or-later. Don't copy code from projects with
   incompatible licenses (GPLv2-only, proprietary, unlicensed snippets).
   Implement from the specs (ECMA-119, SUSP/RRIP, Joliet) instead.
-- No runtime dependencies. Library code in `src/` must run in browsers, Node
-  and workers: use only web-standard APIs (`Uint8Array`, `DataView`,
-  `TextEncoder`), no `node:*` imports. The build config sets `types: []` to
-  catch this.
+- No runtime dependencies. Code in `src/` must run in browsers (the library
+  also in Node, for the tests): use only web-standard APIs (`Uint8Array`,
+  `DataView`, `TextEncoder`, the DOM), no `node:*` imports.
+  `tsconfig.browser.json` typechecks `src/` without Node types (`types: []`)
+  to catch this; it runs as part of `pnpm typecheck`.
 - Output must be deterministic: same inputs and same date give identical bytes.
-- Test-driven development for everything in `src/`. Each cycle:
+- Test-driven development for everything in `src/lib/` (tested in
+  `tests/unit/lib/`), and for the page logic in `src/web/` (pure modules such
+  as `src/web/seed.ts`, tested in `tests/unit/web/`). The DOM wiring in
+  `src/web/main.ts` stays thin and isn't unit-tested. Each
+  cycle:
   1. Write the tests.
   2. Write the structure they need: module, exports, types, constants and
      function signatures, with bodies that only
@@ -59,7 +66,7 @@ Copy genisoimage's behaviour for `-volid cidata -rational-rock -joliet`:
 - Joliet names have no `;1` version suffix, like pycdlib-genisoimage, the
   genisoimage-compatible reference the integration tests compare against.
 - Rock Ridge as `-rational-rock`: uid and gid 0, files `0444`, directories
-  `0555`. Rock Ridge version 1.09, on purpose (see `src/rockridge.ts`).
+  `0555`. Rock Ridge version 1.09, on purpose (see `src/lib/rockridge.ts`).
 - Application Use (512 bytes in both volume descriptors) is filled with
   ASCII spaces, like genisoimage and pycdlib-genisoimage.
 
@@ -110,14 +117,16 @@ time-dependent, or add nothing for a VM seed:
 ## Commands
 
 ```sh
-pnpm typecheck         # tsc --noEmit over src, tests and scripts
+pnpm typecheck         # tsc over src, tests and vite.config.ts, then src without Node types
 pnpm test              # unit + integration tests
 pnpm test:unit         # node:test, tests/unit/**/*.test.ts
 pnpm test:integration  # tests/integration/test_*.py (bsdtar, pycdlib)
 pnpm test:e2e          # tests/e2e/test_linux_readers.py, in a Lima VM (slow)
 pnpm check:headers     # license header check (scripts/check_license_headers.py)
 pnpm check+test        # typecheck, headers, unit + integration tests
-pnpm build             # emit dist/ (JS + .d.ts) from src/
+pnpm dev               # serve the web page locally with Vite (reloads on change)
+pnpm build             # build the web page into dist/ (static files)
+pnpm preview           # serve the built dist/ locally
 
 E2E_VM_TEARDOWN=keep pnpm test:e2e  # e2e tests, leaving the VM running
 ```
@@ -125,8 +134,9 @@ E2E_VM_TEARDOWN=keep pnpm test:e2e  # e2e tests, leaving the VM running
 ## Layout
 
 ```
-src/                library source (published as dist/)
-tests/unit/         TypeScript unit tests (node:test)
+src/lib/            the ISO writer (internal library)
+src/web/            the web page (Vite root): index.html, main.ts, style.css
+tests/unit/         TypeScript unit tests (node:test): lib/ and web/
 tests/integration/  Python tests reading images back with bsdtar and pycdlib
 tests/e2e/          Python tests on Linux in a Lima VM
 tests/support/      helpers shared by the tests (build_iso.ts, seed.py)

@@ -17,8 +17,8 @@ import {
   rrEntry,
   spEntry,
   tfEntry,
-} from "../../src/rockridge.ts";
-import { DATE, DATE_RECORD_HEX, toHex } from "../support/bytes.ts";
+} from "../../../src/lib/rockridge.ts";
+import { DATE, DATE_RECORD_HEX, toHex } from "../../support/bytes.ts";
 
 describe("modes for -rational-rock", () => {
   test("files are r--r--r--, directories r-xr-xr-x", () => {

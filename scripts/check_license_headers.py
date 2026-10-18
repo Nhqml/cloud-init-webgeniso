@@ -9,8 +9,9 @@
 
 """Fails if any source file does not start with the license header.
 
-A shebang and blank lines may come before the header, but the header lines
-must be consecutive. Checks tracked files plus new files not covered by
+Each language uses its own comment syntax (see COMMENT_STYLES). A shebang
+(or an HTML doctype) and blank lines may come before the header, but the
+header lines must be consecutive. Checks tracked files plus new files not covered by
 .gitignore.
 
 Run: scripts/check_license_headers.py
@@ -26,31 +27,38 @@ HEADER_TEXT = [
     "Copyright (C) 2026 Kenji Gaillac",
 ]
 
-# Line comment marker for each kind of source file we check.
-COMMENT_MARKERS = [
-    (re.compile(r"\.(ts|mts|cts|js|mjs|cjs)$"), "//"),
-    (re.compile(r"\.py$"), "#"),
+# Comment syntax (opening, closing) for each kind of source file we check;
+# each header line is one comment.
+COMMENT_STYLES = [
+    (re.compile(r"\.(ts|mts|cts|js|mjs|cjs)$"), ("//", "")),
+    (re.compile(r"\.py$"), ("#", "")),
+    (re.compile(r"\.html$"), ("<!--", "-->")),
+    (re.compile(r"\.css$"), ("/*", "*/")),
 ]
 
+# Lines that must stay first and may come before the header.
+PRELUDE = re.compile(r"^(#!|<!doctype )", re.IGNORECASE)
 
-def comment_marker(path):
-    for pattern, marker in COMMENT_MARKERS:
+
+def comment_style(path):
+    for pattern, style in COMMENT_STYLES:
         if pattern.search(path):
-            return marker
+            return style
     return None
 
 
-def header_for(marker):
-    return [f"{marker} {line}" for line in HEADER_TEXT]
+def header_for(style):
+    opening, closing = style
+    return [f"{opening} {line} {closing}".rstrip() for line in HEADER_TEXT]
 
 
-def has_header(path, marker):
+def has_header(path, style):
     lines = Path(path).read_text(encoding="utf-8").splitlines()
-    if lines and lines[0].startswith("#!"):
+    if lines and PRELUDE.match(lines[0]):
         lines = lines[1:]
     start = next((i for i, line in enumerate(lines) if line.strip()), len(lines))
     actual = [line.rstrip() for line in lines[start : start + len(HEADER_TEXT)]]
-    return actual == header_for(marker)
+    return actual == header_for(style)
 
 
 def main():
@@ -61,8 +69,8 @@ def main():
         check=True,
     ).stdout.splitlines()
     # Deleted but still tracked files show up in the index; skip them.
-    files = [f for f in listed if comment_marker(f) and Path(f).exists()]
-    missing = [f for f in files if not has_header(f, comment_marker(f))]
+    files = [f for f in listed if comment_style(f) and Path(f).exists()]
+    missing = [f for f in files if not has_header(f, comment_style(f))]
 
     if missing:
         print("Missing license header in:", file=sys.stderr)
@@ -70,8 +78,9 @@ def main():
             print(f"  {path}", file=sys.stderr)
         print(
             "\nEach source file must start with:\n"
-            + "\n".join(header_for("//"))
-            + '\n(or "#" instead of "//" in Python files)',
+            + "\n".join(header_for(("//", "")))
+            + "\nin its own comment syntax (#, <!-- -->, /* */). A shebang or"
+            + " <!doctype html> may come first.",
             file=sys.stderr,
         )
         sys.exit(1)

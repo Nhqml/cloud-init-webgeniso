@@ -4,21 +4,21 @@
 import assert from "node:assert/strict";
 import { describe, test } from "node:test";
 
-import { encodeUcs2BE } from "../../src/encode.ts";
+import { encodeUcs2BE } from "../../../src/lib/encode.ts";
 import {
   DOT,
   DOTDOT,
   type DirectoryRecordFields,
   directoryRecord,
-} from "../../src/records.ts";
+} from "../../../src/lib/records.ts";
 import {
   MODE_FILE,
   RR_PX,
   RR_TF,
   pxEntry,
   rrEntry,
-} from "../../src/rockridge.ts";
-import { DATE, DATE_RECORD_HEX, asciiBytes, toHex } from "../support/bytes.ts";
+} from "../../../src/lib/rockridge.ts";
+import { DATE, DATE_RECORD_HEX, asciiBytes, toHex } from "../../support/bytes.ts";
 
 /** A regular file record; tests override only the fields they care about. */
 function recordWithDefaults(overrides: Partial<DirectoryRecordFields> = {}): Uint8Array {
