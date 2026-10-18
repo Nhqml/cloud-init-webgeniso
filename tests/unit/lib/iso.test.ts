@@ -22,6 +22,11 @@ const sector = (image: Uint8Array, lba: number): Uint8Array =>
   image.subarray(lba * SECTOR_SIZE, (lba + 1) * SECTOR_SIZE);
 
 describe("buildSeedIso: image layout", () => {
+  test("is backed by a plain ArrayBuffer, so it can go into a Blob", () => {
+    const image: Uint8Array<ArrayBuffer> = buildSeedIso(files);
+    assert.ok(image.buffer instanceof ArrayBuffer);
+  });
+
   test("is a whole number of sectors", () => {
     const image = buildSeedIso(files);
     assert.ok(image instanceof Uint8Array);

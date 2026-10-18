@@ -89,7 +89,7 @@ function yamlString(value: string): string {
 
 /**
  * A warning when `userData` doesn't start with a documented header, or null
- * if it does or is empty. Like cloud-init, ignores case and leading
+ * if it does or is empty. Code in the message is marked with backticks. Like cloud-init, ignores case and leading
  * whitespace.
  */
 export function userDataWarning(userData: FileContent): string | null {
@@ -100,7 +100,7 @@ export function userDataWarning(userData: FileContent): string | null {
   }
   return (
     "This app doesn't recognize this user-data: it doesn't start with a header such as " +
-    "#cloud-config (configuration) or #! (a script). cloud-init may ignore it; continue " +
+    "`#cloud-config` (configuration) or `#!` (a script). cloud-init may ignore it; continue " +
     "only if you know what you're doing."
   );
 }
@@ -161,4 +161,14 @@ export function seedFiles(state: FormState): SeedFiles {
   if (state.networkConfig !== null) files["network-config"] = state.networkConfig;
   if (state.vendorData !== null) files["vendor-data"] = state.vendorData;
   return files;
+}
+
+/**
+ * The default file name for the image: the instance-id plus ".iso", with
+ * characters file names can't hold on common systems (and control
+ * characters) replaced by "_". "seed.iso" when the instance-id is blank.
+ */
+export function isoFileName(instanceId: string): string {
+  const name = instanceId.trim().replace(/[/\\:*?"<>|\u0000-\u001f\u007f]/g, "_");
+  return `${name === "" ? "seed" : name}.iso`;
 }

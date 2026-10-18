@@ -10,6 +10,7 @@ import {
   type FormState,
   hostnameError,
   instanceIdError,
+  isoFileName,
   loadedFile,
   metaData,
   seedFiles,
@@ -164,7 +165,9 @@ describe("userDataWarning", () => {
     for (const content of ["hostname: vm01\n", "# cloud-config\n", "cloud-config\n", "#"]) {
       const warning = userDataWarning(content);
       assert.match(warning ?? "", warned, JSON.stringify(content));
-      assert.match(warning ?? "", /#cloud-config/);
+      // Headers are marked as code, Markdown-style, for the page to render.
+      assert.match(warning ?? "", /`#cloud-config`/);
+      assert.match(warning ?? "", /`#!`/);
     }
   });
 
@@ -252,5 +255,27 @@ describe("seedFiles", () => {
   test("gives files buildSeedIso accepts", () => {
     const files = seedFiles({ ...base, networkConfig: "version: 2\n", vendorData: "" });
     assert.ok(buildSeedIso(files).length > 0);
+  });
+});
+
+describe("isoFileName", () => {
+  test("names the image after the instance-id", () => {
+    assert.equal(isoFileName("iid-local01"), "iid-local01.iso");
+    assert.equal(isoFileName("my instance"), "my instance.iso");
+    assert.equal(isoFileName("café"), "café.iso");
+  });
+
+  test("replaces characters file names can't hold", () => {
+    assert.equal(isoFileName('a/b\\c:d*e?f"g<h>i|j'), "a_b_c_d_e_f_g_h_i_j.iso");
+    assert.equal(isoFileName("a\tb"), "a_b.iso");
+  });
+
+  test("trims surrounding spaces", () => {
+    assert.equal(isoFileName("  vm01 "), "vm01.iso");
+  });
+
+  test("falls back to seed.iso without a usable instance-id", () => {
+    assert.equal(isoFileName(""), "seed.iso");
+    assert.equal(isoFileName("   "), "seed.iso");
   });
 });

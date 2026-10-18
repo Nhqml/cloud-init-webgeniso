@@ -123,7 +123,10 @@ interface PlacedFile extends SeedFile {
 }
 
 /** Builds a NoCloud seed ISO image from `files`. */
-export function buildSeedIso(files: SeedFiles, options: SeedIsoOptions = {}): Uint8Array {
+export function buildSeedIso(
+  files: SeedFiles,
+  options: SeedIsoOptions = {},
+): Uint8Array<ArrayBuffer> {
   const date = options.date ?? new Date(0);
   const placed = placeFiles(readSeedFiles(files));
   const volumeSpaceSize = placed.reduce(
