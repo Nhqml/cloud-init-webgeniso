@@ -4,7 +4,7 @@
 // Page logic, kept free of the DOM so it can be unit-tested: turning the
 // form's fields into seed files.
 
-import type { FileContent } from "../lib/iso.ts";
+import type { FileContent, SeedFiles } from "../lib/iso.ts";
 
 /** Default instance-id, the same as cloud-localds'. */
 export const DEFAULT_INSTANCE_ID = "iid-local01";
@@ -103,4 +103,62 @@ export function userDataWarning(userData: FileContent): string | null {
     "#cloud-config (configuration) or #! (a script). cloud-init may ignore it; continue " +
     "only if you know what you're doing."
   );
+}
+
+/**
+ * The byte order mark, U+FEFF, as found at the start of a decoded string.
+ * In a UTF-8 file it's the bytes EF BB BF; some editors write it there.
+ */
+const BYTE_ORDER_MARK = "\ufeff";
+
+/** A file loaded from disk, as an editor holds it. */
+export interface LoadedFile {
+  /** The text, when it's UTF-8, so it can be shown and edited; else the bytes. */
+  content: FileContent;
+  /** Tells the user how the file was altered while loading, or null if it wasn't. */
+  notice: string | null;
+}
+
+/**
+ * Loads a file from disk for an editor. UTF-8 text becomes a string, minus
+ * any byte order mark: cloud-init doesn't skip it, so it would ignore
+ * user-data saved "UTF-8 with BOM" (as Windows Notepad does). Anything else,
+ * e.g. gzip, is kept as the original bytes.
+ */
+export function loadedFile(bytes: Uint8Array): LoadedFile {
+  let text: string;
+  try {
+    text = new TextDecoder("utf-8", { fatal: true, ignoreBOM: true }).decode(bytes);
+  } catch {
+    return { content: bytes, notice: null };
+  }
+  if (!text.startsWith(BYTE_ORDER_MARK)) return { content: text, notice: null };
+  return {
+    content: text.slice(BYTE_ORDER_MARK.length),
+    notice:
+      "This file started with a byte order mark (BOM), which cloud-init doesn't " +
+      "expect: it was removed.",
+  };
+}
+
+/** The whole form. An optional file is null when it's turned off. */
+export interface FormState {
+  metaData: MetaDataFields;
+  userData: FileContent;
+  networkConfig: FileContent | null;
+  vendorData: FileContent | null;
+}
+
+/**
+ * The seed files for `state`, for buildSeedIso. Throws a RangeError if the
+ * meta-data fields are invalid.
+ */
+export function seedFiles(state: FormState): SeedFiles {
+  const files: SeedFiles = {
+    "meta-data": metaData(state.metaData),
+    "user-data": state.userData,
+  };
+  if (state.networkConfig !== null) files["network-config"] = state.networkConfig;
+  if (state.vendorData !== null) files["vendor-data"] = state.vendorData;
+  return files;
 }

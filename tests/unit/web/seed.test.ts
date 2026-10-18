@@ -4,11 +4,15 @@
 import assert from "node:assert/strict";
 import { describe, test } from "node:test";
 
+import { buildSeedIso } from "../../../src/lib/iso.ts";
 import {
   DEFAULT_INSTANCE_ID,
+  type FormState,
   hostnameError,
   instanceIdError,
+  loadedFile,
   metaData,
+  seedFiles,
   userDataWarning,
 } from "../../../src/web/seed.ts";
 
@@ -188,5 +192,65 @@ describe("userDataWarning", () => {
   test("reads bytes the same as text", () => {
     assert.equal(userDataWarning(new TextEncoder().encode("#cloud-config\n")), null);
     assert.match(userDataWarning(new TextEncoder().encode("hostname: x\n")) ?? "", warned);
+  });
+});
+
+describe("loadedFile", () => {
+  test("turns UTF-8 text into a string, for the editor", () => {
+    for (const text of ["#cloud-config\n", "hostname: café-☁\n", ""]) {
+      assert.deepEqual(loadedFile(new TextEncoder().encode(text)), { content: text, notice: null });
+    }
+  });
+
+  test("removes a byte order mark, and says so", () => {
+    const bom = new Uint8Array([0xef, 0xbb, 0xbf, ...new TextEncoder().encode("#cloud-config\n")]);
+    const loaded = loadedFile(bom);
+    assert.equal(loaded.content, "#cloud-config\n");
+    assert.match(loaded.notice ?? "", /byte order mark.*removed/);
+  });
+
+  test("keeps anything that isn't UTF-8 as bytes, unchanged", () => {
+    const gzip = new Uint8Array([0x1f, 0x8b, 0x08, 0x00, 0xff, 0xfe]);
+    assert.deepEqual(loadedFile(gzip), { content: gzip, notice: null });
+  });
+});
+
+describe("seedFiles", () => {
+  const base: FormState = {
+    metaData: { instanceId: "iid-local01", hostname: "vm01" },
+    userData: "#cloud-config\n",
+    networkConfig: null,
+    vendorData: null,
+  };
+
+  test("generates meta-data and passes user-data through", () => {
+    assert.deepEqual(seedFiles(base), {
+      "meta-data": 'instance-id: "iid-local01"\nlocal-hostname: "vm01"\n',
+      "user-data": "#cloud-config\n",
+    });
+  });
+
+  test("includes the optional files only when enabled", () => {
+    const bytes = new Uint8Array([0x1f, 0x8b]);
+    const files = seedFiles({ ...base, networkConfig: "version: 2\n", vendorData: bytes });
+    assert.equal(files["network-config"], "version: 2\n");
+    assert.equal(files["vendor-data"], bytes);
+    assert.deepEqual(Object.keys(seedFiles(base)).sort(), ["meta-data", "user-data"]);
+  });
+
+  test("keeps an enabled but empty optional file", () => {
+    assert.equal(seedFiles({ ...base, vendorData: "" })["vendor-data"], "");
+  });
+
+  test("rejects invalid meta-data fields", () => {
+    assert.throws(
+      () => seedFiles({ ...base, metaData: { instanceId: "", hostname: "" } }),
+      RangeError,
+    );
+  });
+
+  test("gives files buildSeedIso accepts", () => {
+    const files = seedFiles({ ...base, networkConfig: "version: 2\n", vendorData: "" });
+    assert.ok(buildSeedIso(files).length > 0);
   });
 });
