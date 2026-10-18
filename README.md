@@ -11,7 +11,7 @@ genisoimage -output seed.img -volid cidata -rational-rock -joliet user-data meta
 ```
 
 It is not meant as a general-purpose ISO creation tool: no support for subdirectories, boot images, large files or anything fancy, just the following:
-- Volume label `cidata`, recognised by cloud-init's NoCloud datasource
+- Volume label `cidata`, recognized by cloud-init's NoCloud datasource
 - Flat root directory holding `user-data`, `meta-data` and, optionally, `network-config` and `vendor-data`
 - Rock Ridge and Joliet extensions
 

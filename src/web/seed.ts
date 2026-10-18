@@ -4,11 +4,27 @@
 // Page logic, kept free of the DOM so it can be unit-tested: turning the
 // form's fields into seed files.
 
+import type { FileContent } from "../lib/iso.ts";
+
 /** Default instance-id, the same as cloud-localds'. */
 export const DEFAULT_INSTANCE_ID = "iid-local01";
 
 /** C0 control characters (line breaks included) and DELincluded. */
 const CONTROL_CHARACTERS = /[\u0000-\u001f\u007f]/;
+
+/**
+ * The user-data headers documented at docs.cloud-init.io, compared with the
+ * lowercased content. cloud-init accepts a few more, undocumented ones, and
+ * also gzip and MIME user-data; the app doesn't check those advanced uses.
+ */
+const USER_DATA_HEADERS = [
+  "#cloud-config",
+  "#cloud-config-archive",
+  "#!",
+  "#cloud-boothook",
+  "#include",
+  "## template: jinja",
+];
 
 /** The meta-data form's fields. An empty hostname means none. */
 export interface MetaDataFields {
@@ -69,4 +85,22 @@ export function metaData(fields: MetaDataFields): string {
  */
 function yamlString(value: string): string {
   return JSON.stringify(value);
+}
+
+/**
+ * A warning when `userData` doesn't start with a documented header, or null
+ * if it does or is empty. Like cloud-init, ignores case and leading
+ * whitespace.
+ */
+export function userDataWarning(userData: FileContent): string | null {
+  const text = typeof userData === "string" ? userData : new TextDecoder().decode(userData);
+  const content = text.trimStart().toLowerCase();
+  if (content === "" || USER_DATA_HEADERS.some((header) => content.startsWith(header))) {
+    return null;
+  }
+  return (
+    "This app doesn't recognize this user-data: it doesn't start with a header such as " +
+    "#cloud-config (configuration) or #! (a script). cloud-init may ignore it; continue " +
+    "only if you know what you're doing."
+  );
 }

@@ -9,6 +9,7 @@ import {
   hostnameError,
   instanceIdError,
   metaData,
+  userDataWarning,
 } from "../../../src/web/seed.ts";
 
 describe("DEFAULT_INSTANCE_ID", () => {
@@ -124,5 +125,68 @@ describe("metaData", () => {
     assert.throws(() => metaData({ instanceId: "", hostname: "" }), RangeError);
     assert.throws(() => metaData({ instanceId: "iid\nx", hostname: "" }), RangeError);
     assert.throws(() => metaData({ instanceId: "iid-local01", hostname: "vm_01" }), RangeError);
+  });
+});
+
+describe("userDataWarning", () => {
+  const warned = /^This app doesn't recognize.*cloud-init may ignore.*know what you're doing/s;
+
+  test("accepts the headers documented by cloud-init", () => {
+    const headers = [
+      "#cloud-config",
+      "#cloud-config-archive",
+      "#!/bin/sh",
+      "#cloud-boothook",
+      "#include",
+      "## template: jinja",
+    ];
+    for (const header of headers) {
+      assert.equal(userDataWarning(`${header}\nrest\n`), null, header);
+    }
+  });
+
+  test("ignores case and leading whitespace, like cloud-init", () => {
+    assert.equal(userDataWarning("#Cloud-Config\n"), null);
+    assert.equal(userDataWarning("\n\n  \t#cloud-config\n"), null);
+  });
+
+  test("accepts empty user-data", () => {
+    assert.equal(userDataWarning(""), null);
+    assert.equal(userDataWarning(" \n\t\n"), null);
+  });
+
+  test("warns about content without a recognized header", () => {
+    // "# cloud-config" (with a space) is a common typo.
+    for (const content of ["hostname: vm01\n", "# cloud-config\n", "cloud-config\n", "#"]) {
+      const warning = userDataWarning(content);
+      assert.match(warning ?? "", warned, JSON.stringify(content));
+      assert.match(warning ?? "", /#cloud-config/);
+    }
+  });
+
+  test("warns about headers cloud-init accepts but doesn't document", () => {
+    // #include-once and #cloud-config-jsonp aren't documented either, but
+    // they start with documented headers, so they're accepted: cloud-init
+    // processes them.
+    const headers = [
+      "#part-handler",
+      "text/x-shellscript-per-boot",
+      "text/x-shellscript-per-instance",
+      "text/x-shellscript-per-once",
+    ];
+    for (const header of headers) {
+      assert.match(userDataWarning(`${header}\nrest\n`) ?? "", warned, header);
+    }
+  });
+
+  test("warns about MIME and gzip user-data: advanced uses the app doesn't check", () => {
+    const mime = 'Content-Type: multipart/mixed; boundary="X"\nMIME-Version: 1.0\n\n--X\n';
+    assert.match(userDataWarning(mime) ?? "", warned);
+    assert.match(userDataWarning(new Uint8Array([0x1f, 0x8b, 0x08, 0x00, 0xff])) ?? "", warned);
+  });
+
+  test("reads bytes the same as text", () => {
+    assert.equal(userDataWarning(new TextEncoder().encode("#cloud-config\n")), null);
+    assert.match(userDataWarning(new TextEncoder().encode("hostname: x\n")) ?? "", warned);
   });
 });
