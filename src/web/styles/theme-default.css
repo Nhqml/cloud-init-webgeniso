@@ -1,0 +1,263 @@
+/* SPDX-License-Identifier: AGPL-3.0-or-later */
+/* Copyright (C) 2026 Kenji Gaillac */
+
+/*
+ * The Default theme: neutral greys, thin borders, system fonts, one accent
+ * colour. Follows the system's light or dark mode.
+ */
+
+:root[data-theme="default"] {
+  --background: #f6f7f9;
+  --surface: #ffffff;
+  --text: #1c1f24;
+  --muted: #5b6370;
+  --border: #d8dce3;
+  --accent: #c7431a;
+  --accent-text: #ffffff;
+  --error: #b42318;
+  --warning-background: #fff6e0;
+  --warning-border: #f0c45a;
+  --notice-background: #eaf2ff;
+  --notice-border: #9bbcf2;
+  --radius: 8px;
+  --font-sans: system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  color-scheme: light;
+
+  @media (prefers-color-scheme: dark) {
+    --background: #15171a;
+    --surface: #1e2125;
+    --text: #e6e8eb;
+    --muted: #9aa2ae;
+    --border: #343a42;
+    --accent: #f26b3a;
+    --accent-text: #15171a;
+    --error: #ff8a80;
+    --warning-background: #3a3020;
+    --warning-border: #8a6d2a;
+    --notice-background: #1f2c40;
+    --notice-border: #3d5c8c;
+    color-scheme: dark;
+  }
+
+  & body {
+    background: var(--background);
+    color: var(--text);
+    font: 16px/1.5 var(--font-sans);
+  }
+
+  & a {
+    color: var(--accent);
+  }
+
+  & code,
+  & textarea,
+  & input[type="text"] {
+    font-family: var(--font-mono);
+  }
+
+  /* --- Theme picker and header ------------------------------------------- */
+
+  & select {
+    padding: 0.25rem 1.75rem 0.25rem 0.6rem;
+    background: var(--surface);
+    color: var(--text);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    font: inherit;
+  }
+
+  & header h1 {
+    margin: 1rem 0 0.25rem;
+    font-size: 1.75rem;
+  }
+
+  & .lead {
+    margin: 0 0 1.5rem;
+    color: var(--muted);
+  }
+
+  & .lead strong {
+    display: block;
+    margin-top: 0.25rem;
+    color: var(--text);
+  }
+
+  /* --- Cards ------------------------------------------------------------- */
+
+  & .card {
+    margin-bottom: 1rem;
+    padding: 1rem 1.25rem;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+  }
+
+  & .card h2 {
+    margin: 0;
+    font-family: var(--font-mono);
+    font-size: 1.1rem;
+  }
+
+  & .fields {
+    gap: 0.5rem 1rem;
+    margin-top: 0.75rem;
+  }
+
+  & .hint {
+    color: var(--muted);
+    font-size: 0.875rem;
+  }
+
+  /* --- Inputs ------------------------------------------------------------ */
+
+  & input[type="text"],
+  & textarea {
+    padding: 0.5rem 0.625rem;
+    background: var(--background);
+    color: var(--text);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    font-size: 0.9rem;
+  }
+
+  & input[type="text"]:focus,
+  & textarea:focus,
+  & select:focus-visible,
+  & button:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 1px;
+  }
+
+  & input[aria-invalid="true"] {
+    border-color: var(--error);
+  }
+
+  /* --- File editors ------------------------------------------------------ */
+
+  & .file-header {
+    gap: 0.75rem;
+  }
+
+  & .file-body {
+    margin-top: 0.75rem;
+  }
+
+  & .file.dragging textarea {
+    border-color: var(--accent);
+    outline: 2px dashed var(--accent);
+  }
+
+  & .include {
+    gap: 0.25rem;
+    color: var(--muted);
+    font-size: 0.9rem;
+  }
+
+  & .include input {
+    accent-color: var(--accent);
+  }
+
+  & .binary {
+    gap: 1rem;
+    padding: 0.75rem;
+    background: var(--background);
+    border: 1px dashed var(--border);
+    border-radius: 6px;
+    font-family: var(--font-mono);
+    font-size: 0.9rem;
+  }
+
+  /* --- Buttons ----------------------------------------------------------- */
+
+  & button {
+    padding: 0.375rem 0.75rem;
+    background: var(--surface);
+    color: var(--text);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    font-size: 0.9rem;
+  }
+
+  & button:hover:not(:disabled) {
+    border-color: var(--muted);
+  }
+
+  & button:disabled {
+    opacity: 0.5;
+  }
+
+  & button.primary {
+    padding: 0.625rem 1.25rem;
+    background: var(--accent);
+    color: var(--accent-text);
+    border-color: var(--accent);
+    font-size: 1rem;
+    font-weight: 600;
+  }
+
+  & button.primary:hover:not(:disabled) {
+    filter: brightness(0.92);
+  }
+
+  /* --- Messages ---------------------------------------------------------- */
+
+  & .error {
+    margin: 0;
+    color: var(--error);
+    font-size: 0.875rem;
+  }
+
+  & .warning,
+  & .notice {
+    margin: 0.75rem 0 0;
+    padding: 0.5rem 0.75rem;
+    border-radius: 6px;
+    font-size: 0.875rem;
+  }
+
+  & .warning {
+    background: var(--warning-background);
+    border: 1px solid var(--warning-border);
+  }
+
+  & .notice {
+    background: var(--notice-background);
+    border: 1px solid var(--notice-border);
+  }
+
+  & .warning code,
+  & .notice code,
+  & .error code {
+    padding: 0 0.25em;
+    background: rgb(127 127 127 / 15%);
+    border-radius: 4px;
+  }
+
+  /* --- Download and footer ----------------------------------------------- */
+
+  & .actions {
+    gap: 0.5rem 1rem;
+    margin: 1.5rem 0 2rem;
+  }
+
+  & footer {
+    padding-bottom: 2rem;
+    color: var(--muted);
+    font-size: 0.875rem;
+  }
+
+  & footer p {
+    margin: 0.25rem 0;
+  }
+
+  & footer .source a {
+    margin-top: 0.25rem;
+    color: var(--muted);
+  }
+
+  & footer .source a:hover,
+  & footer .source a:focus-visible {
+    color: var(--text);
+  }
+}

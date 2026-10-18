@@ -1,0 +1,292 @@
+/* SPDX-License-Identifier: AGPL-3.0-or-later */
+/* Copyright (C) 2026 Kenji Gaillac */
+
+/*
+ * The Windoze theme, a 1990s look: Windows 95 on a teal desktop. Sections are silver windows
+ * with bevelled edges and navy title bars; buttons are raised and sink when
+ * pressed; fields are sunken white; messages are yellow tooltips. Light
+ * only, on purpose: there was no dark mode in 1995.
+ */
+
+:root[data-theme="windoze"] {
+  --desktop: #008080;
+  --silver: #c0c0c0;
+  --white: #ffffff;
+  --light: #dfdfdf;
+  --grey: #808080;
+  --black: #0a0a0a;
+  --navy: #000080;
+  --title-bar: linear-gradient(90deg, #000080, #1084d0);
+  --tooltip: #ffffe1;
+  --link: #0000ee;
+  --link-visited: #551a8b;
+  --error: #800000;
+
+  /* Bevels: two layers of inset shadows, light on the top-left edges and
+     dark on the bottom-right ones (reversed for sunken and pressed). */
+  --raised: inset -1px -1px var(--black), inset 1px 1px var(--white),
+    inset -2px -2px var(--grey), inset 2px 2px var(--light);
+  --sunken: inset -1px -1px var(--white), inset 1px 1px var(--grey),
+    inset -2px -2px var(--light), inset 2px 2px var(--black);
+  --pressed: inset -1px -1px var(--white), inset 1px 1px var(--black),
+    inset -2px -2px var(--light), inset 2px 2px var(--grey);
+  --panel: inset 1px 1px var(--grey), inset -1px -1px var(--white);
+
+  --font-ui: "MS Sans Serif", "Microsoft Sans Serif", "Pixelated MS Sans Serif", Tahoma, Geneva,
+    Verdana, sans-serif;
+  --font-mono: "Lucida Console", "Fixedsys", "Courier New", monospace;
+
+  color-scheme: light;
+
+  & body {
+    background: var(--desktop);
+    color: var(--black);
+    font: 14px/1.4 var(--font-ui);
+    -webkit-font-smoothing: none;
+  }
+
+  & a {
+    color: var(--link);
+  }
+
+  & a:visited {
+    color: var(--link-visited);
+  }
+
+  & code,
+  & textarea {
+    font-family: var(--font-mono);
+  }
+
+  /* --- Theme picker ----------------------------------------------------- */
+
+  & select {
+    padding: 2px 24px 2px 6px;
+    background: var(--white);
+    color: var(--black);
+    border: 0;
+    border-radius: 0;
+    box-shadow: var(--sunken);
+    font: inherit;
+  }
+
+  /* --- Header: the application's main window ------------------------------ */
+
+  & header {
+    margin: 0.75rem 0 1.25rem;
+    padding: 3px;
+    background: var(--silver);
+    box-shadow: var(--raised);
+  }
+
+  & header h1 {
+    margin: 0;
+    padding: 3px 6px;
+    background: var(--title-bar);
+    color: var(--white);
+    font-size: 1.15rem;
+    font-weight: 700;
+  }
+
+  & .lead {
+    margin: 0;
+    padding: 10px 12px;
+  }
+
+  & .lead strong {
+    display: block;
+    margin-top: 0.5rem;
+  }
+
+  /* --- Cards: windows with title bars ------------------------------------ */
+
+  & .card {
+    margin-bottom: 1.25rem;
+    padding: 3px;
+    background: var(--silver);
+    box-shadow: var(--raised);
+  }
+
+  & .card > h2,
+  & .file-header {
+    margin: 0;
+    padding: 3px 4px 3px 6px;
+    background: var(--title-bar);
+    color: var(--white);
+  }
+
+  & .card h2 {
+    margin: 0;
+    font-size: 14px;
+    font-weight: 700;
+  }
+
+  & .file-header {
+    gap: 6px;
+  }
+
+  & .fields {
+    gap: 6px 12px;
+    padding: 10px 12px;
+  }
+
+  & .file-body {
+    padding: 8px;
+  }
+
+  & .hint {
+    color: #404040;
+  }
+
+  & .include {
+    gap: 4px;
+  }
+
+  /* --- Fields: sunken white --------------------------------------------- */
+
+  & input[type="text"],
+  & textarea {
+    padding: 4px 6px;
+    background: var(--white);
+    color: var(--black);
+    border: 0;
+    border-radius: 0;
+    box-shadow: var(--sunken);
+    font-size: 14px;
+  }
+
+  & textarea {
+    padding: 6px 8px;
+    font-size: 13px;
+  }
+
+  & textarea::selection,
+  & input[type="text"]::selection {
+    background: var(--navy);
+    color: var(--white);
+  }
+
+  & input[type="text"]:focus,
+  & textarea:focus,
+  & select:focus-visible {
+    outline: 1px dotted var(--black);
+    outline-offset: 1px;
+  }
+
+  & input[aria-invalid="true"] {
+    outline: 1px solid var(--error);
+  }
+
+  & .file.dragging textarea {
+    outline: 2px dashed var(--navy);
+    outline-offset: 2px;
+  }
+
+  & .binary {
+    gap: 1rem;
+    padding: 6px 8px;
+    background: var(--white);
+    box-shadow: var(--sunken);
+    font-family: var(--font-mono);
+    font-size: 13px;
+  }
+
+  /* --- Buttons: raised, sinking when pressed ----------------------------- */
+
+  & button {
+    min-width: 75px;
+    padding: 4px 12px;
+    background: var(--silver);
+    color: var(--black);
+    border: 0;
+    border-radius: 0;
+    box-shadow: var(--raised);
+    font-size: 13px;
+  }
+
+  & button:active:not(:disabled) {
+    padding: 5px 11px 3px 13px;
+    box-shadow: var(--pressed);
+  }
+
+  & button:focus-visible {
+    outline: 1px dotted var(--black);
+    outline-offset: -5px;
+  }
+
+  /* Disabled buttons have embossed grey text. */
+  & button:disabled {
+    color: var(--grey);
+    text-shadow: 1px 1px 0 var(--white);
+  }
+
+  /* The default button has an extra black outline. */
+  & button.primary {
+    padding: 6px 20px;
+    box-shadow: 0 0 0 1px var(--black), var(--raised);
+    font-weight: 700;
+  }
+
+  & button.primary:active:not(:disabled) {
+    padding: 7px 19px 5px 21px;
+    box-shadow: 0 0 0 1px var(--black), var(--pressed);
+  }
+
+  /* --- Messages: tooltips ------------------------------------------------ */
+
+  & .error {
+    margin: 0;
+    color: var(--error);
+    font-size: 13px;
+  }
+
+  & .warning,
+  & .notice {
+    margin: 8px 0 0;
+    padding: 4px 8px;
+    background: var(--tooltip);
+    border: 1px solid var(--black);
+    font-size: 13px;
+  }
+
+  & .warning {
+    font-weight: 700;
+  }
+
+  /* --- Download: a toolbar panel ----------------------------------------- */
+
+  & .actions {
+    gap: 6px 10px;
+    margin: 0 0 1.25rem;
+    padding: 8px 10px;
+    background: var(--silver);
+    box-shadow: var(--raised);
+  }
+
+  /* --- Footer: a status bar with sunken panels --------------------------- */
+
+  & footer {
+    margin-bottom: 1rem;
+    padding: 3px;
+    background: var(--silver);
+    box-shadow: var(--raised);
+    font-size: 13px;
+  }
+
+  & footer p {
+    display: inline-block;
+    margin: 2px;
+    padding: 2px 8px;
+    vertical-align: middle;
+    box-shadow: var(--panel);
+  }
+
+  & footer .source a {
+    color: var(--black);
+  }
+
+  & footer .source svg {
+    width: 16px;
+    height: 16px;
+  }
+}

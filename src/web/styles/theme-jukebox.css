@@ -1,0 +1,423 @@
+/* SPDX-License-Identifier: AGPL-3.0-or-later */
+/* Copyright (C) 2026 Kenji Gaillac */
+
+/*
+ * The Jukebox theme, a 1970s disco look: cream paper and brown ink, with
+ * hot pink, purple, gold and orange; sunset stripes and a mirror ball by the
+ * title, chunky outlined cards with purple offset shadows, and the editors
+ * as amber CRT terminals. In dark mode, a night club. System fonts only.
+ */
+
+:root[data-theme="jukebox"] {
+  --paper: #f4e7c8;
+  --paper-light: #fbf3df;
+  --ink: #3b2416;
+  --ink-soft: #6b4a33;
+  --gold: #e5a82b;
+  --orange: #c9561f;
+  --pink: #d6197a;
+  --purple: #6b2fa0;
+  --screen: #2a1a10;
+  --amber: #ffb547;
+  /* Text on the orange, pink and purple buttons and badges. */
+  --on-accent: #fff8e8;
+  --error: #a8371b;
+  --warning-background: #f7dd9a;
+  --notice-background: #eadcf5;
+  /* Mirror-ball glints behind the header. */
+  --glint: rgb(214 25 122 / 45%);
+  --shadow: 4px 4px 0 var(--purple);
+  --small-shadow: 2px 2px 0 var(--purple);
+  --radius: 14px;
+
+  --font-display: "Cooper Black", "Cooper Std", "Recoleta", "Bookman Old Style", "Bookman",
+    "URW Bookman", Georgia, serif;
+  --font-mono: "Courier Prime", "American Typewriter", "Courier New", Courier, ui-monospace,
+    monospace;
+
+  color-scheme: light;
+
+  /* Dark mode: a night club, deep purple with neon pink and purple. */
+  @media (prefers-color-scheme: dark) {
+    --paper: #1c0e26;
+    --paper-light: #2a1638;
+    --ink: #f6e7d8;
+    --ink-soft: #cbb3d6;
+    --gold: #f5c04a;
+    --orange: #ff8a3d;
+    --pink: #ff4fa8;
+    --purple: #b77bff;
+    --screen: #12081a;
+    --on-accent: #1c0e26;
+    --error: #ff8a65;
+    --warning-background: #4a3815;
+    --notice-background: #3a2550;
+    --glint: rgb(255 255 255 / 70%);
+    --shadow: 4px 4px 0 #000;
+    --small-shadow: 2px 2px 0 #000;
+    color-scheme: dark;
+  }
+
+  & body {
+    background: var(--paper);
+    color: var(--ink);
+    font: 16px/1.55 var(--font-mono);
+  }
+
+  & a {
+    color: var(--purple);
+    text-decoration-thickness: 2px;
+    text-underline-offset: 2px;
+  }
+
+  & a:hover {
+    color: var(--pink);
+  }
+
+  & code,
+  & textarea,
+  & input[type="text"],
+  & select {
+    font-family: var(--font-mono);
+  }
+
+  /* --- Theme picker ------------------------------------------------------ */
+
+  & select {
+    padding: 0.25rem 1.75rem 0.25rem 0.7rem;
+    background: var(--paper-light);
+    color: var(--ink);
+    border: 2px solid var(--ink);
+    border-radius: 999px;
+    box-shadow: var(--small-shadow);
+    font-size: 0.85rem;
+    font-weight: 700;
+  }
+
+  /* --- Header: title, mirror ball, glints and sunset stripes -------------- */
+
+  & header {
+    margin: 1.5rem 0 2rem;
+    padding-top: 1rem;
+    background:
+      radial-gradient(circle at 6% 18%, var(--glint) 0 1.5px, transparent 2.5px),
+      radial-gradient(circle at 18% 78%, var(--glint) 0 1px, transparent 2px),
+      radial-gradient(circle at 37% 8%, var(--glint) 0 2px, transparent 3px),
+      radial-gradient(circle at 55% 62%, var(--glint) 0 1px, transparent 2px),
+      radial-gradient(circle at 71% 14%, var(--glint) 0 1.5px, transparent 2.5px),
+      radial-gradient(circle at 86% 48%, var(--glint) 0 2px, transparent 3px),
+      radial-gradient(circle at 96% 10%, var(--glint) 0 1px, transparent 2px);
+  }
+
+  /* The sunset stripes, disco edition: gold, orange, pink and purple. */
+  & header::after {
+    display: block;
+    height: 36px;
+    margin-top: 1.25rem;
+    background: linear-gradient(
+      to bottom,
+      var(--gold) 0 6px,
+      transparent 6px 9px,
+      var(--orange) 9px 16px,
+      transparent 16px 19px,
+      var(--pink) 19px 27px,
+      transparent 27px 30px,
+      var(--purple) 30px 36px
+    );
+    content: "";
+  }
+
+  & header h1 {
+    margin: 0 0 0.5rem;
+    background: linear-gradient(90deg, var(--orange), var(--pink) 55%, var(--purple));
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    filter: drop-shadow(3px 3px 0 var(--ink));
+    font-family: var(--font-display);
+    font-size: clamp(2.2rem, 6vw, 3.4rem);
+    font-weight: 900;
+    line-height: 1.1;
+    letter-spacing: -0.01em;
+  }
+
+  /* A mirror ball before the title: a silver sphere with facets and a
+     highlight. Purely decorative, so it's an empty pseudo-element. */
+  & header h1::before {
+    display: inline-block;
+    width: 0.8em;
+    height: 0.8em;
+    margin-right: 0.25em;
+    vertical-align: -0.05em;
+    background:
+      radial-gradient(circle at 32% 28%, #fff 0 10%, transparent 32%),
+      repeating-linear-gradient(0deg, rgb(0 0 0 / 22%) 0 1px, transparent 1px 0.12em),
+      repeating-linear-gradient(90deg, rgb(0 0 0 / 22%) 0 1px, transparent 1px 0.12em),
+      radial-gradient(circle at 40% 35%, #f4f4fa, #9a96b4 70%, #5d5876);
+    border-radius: 50%;
+    content: "";
+  }
+
+  & .lead {
+    margin: 0;
+    color: var(--ink-soft);
+  }
+
+  & .lead a {
+    color: var(--purple);
+  }
+
+  & .lead strong {
+    display: inline-block;
+    margin-top: 0.75rem;
+    padding: 0.2rem 0.7rem;
+    background: var(--pink);
+    color: var(--on-accent);
+    border: 2px solid var(--ink);
+    border-radius: 999px;
+    box-shadow: var(--small-shadow);
+    font-weight: 700;
+  }
+
+  /* --- Cards ------------------------------------------------------------- */
+
+  & .card {
+    margin-bottom: 1.5rem;
+    padding: 1rem 1.25rem 1.25rem;
+    background: var(--paper-light);
+    border: 3px solid var(--ink);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+  }
+
+  & .card h2 {
+    margin: 0;
+    color: var(--purple);
+    font-family: var(--font-display);
+    font-size: 1.35rem;
+    font-weight: 900;
+  }
+
+  & .fields {
+    gap: 0.6rem 1rem;
+    margin-top: 0.75rem;
+  }
+
+  & label {
+    font-weight: 700;
+  }
+
+  & .hint {
+    color: var(--ink-soft);
+    font-size: 0.85rem;
+    font-weight: 400;
+  }
+
+  /* --- Inputs ------------------------------------------------------------ */
+
+  & input[type="text"] {
+    padding: 0.5rem 0.7rem;
+    background: var(--paper);
+    color: var(--ink);
+    border: 2px solid var(--ink);
+    border-radius: 8px;
+    font-size: 0.95rem;
+  }
+
+  & input[type="text"]::placeholder {
+    color: var(--ink-soft);
+    opacity: 0.6;
+  }
+
+  & input[type="text"]:focus,
+  & textarea:focus,
+  & select:focus-visible {
+    outline: 3px solid var(--pink);
+    outline-offset: 2px;
+  }
+
+  & input[aria-invalid="true"] {
+    border-color: var(--error);
+    background: color-mix(in srgb, var(--error) 10%, var(--paper));
+  }
+
+  /* The editors: amber CRT terminals, with faint scanlines. */
+  & textarea {
+    padding: 0.75rem 0.9rem;
+    background:
+      repeating-linear-gradient(to bottom, transparent 0 2px, rgb(0 0 0 / 18%) 2px 3px),
+      var(--screen);
+    color: var(--amber);
+    caret-color: var(--amber);
+    border: 3px solid var(--ink);
+    border-radius: 10px;
+    box-shadow: inset 0 0 24px rgb(0 0 0 / 60%);
+    font-size: 0.95rem;
+    line-height: 1.5;
+    text-shadow: 0 0 6px rgb(255 181 71 / 45%);
+  }
+
+  & textarea::selection {
+    background: var(--pink);
+    color: #fff8e8;
+  }
+
+  /* --- File editors ------------------------------------------------------ */
+
+  & .file-header {
+    gap: 0.75rem;
+  }
+
+  & .file-body {
+    margin-top: 0.85rem;
+  }
+
+  & .file.dragging textarea {
+    outline: 3px dashed var(--pink);
+    outline-offset: 3px;
+  }
+
+  & .include {
+    gap: 0.35rem;
+    font-size: 0.9rem;
+    font-weight: 700;
+  }
+
+  & .include input {
+    width: 1.1rem;
+    height: 1.1rem;
+    accent-color: var(--pink);
+  }
+
+  & .binary {
+    gap: 1rem;
+    padding: 0.75rem 0.9rem;
+    background: var(--screen);
+    color: var(--amber);
+    border: 3px solid var(--ink);
+    border-radius: 10px;
+    font-size: 0.9rem;
+  }
+
+  /* --- Buttons ----------------------------------------------------------- */
+
+  & button {
+    padding: 0.4rem 0.9rem;
+    background: var(--paper);
+    color: var(--ink);
+    border: 2px solid var(--ink);
+    border-radius: 999px;
+    box-shadow: var(--small-shadow);
+    font-size: 0.85rem;
+    font-weight: 700;
+    transition: transform 60ms ease, box-shadow 60ms ease;
+  }
+
+  & button:hover:not(:disabled) {
+    background: var(--pink);
+    color: var(--on-accent);
+  }
+
+  /* Pressing a button pushes it into its shadow. */
+  & button:active:not(:disabled) {
+    transform: translate(2px, 2px);
+    box-shadow: 0 0 0 var(--purple);
+  }
+
+  & button:focus-visible {
+    outline: 3px solid var(--pink);
+    outline-offset: 2px;
+  }
+
+  & button:disabled {
+    opacity: 0.45;
+  }
+
+  & button.primary {
+    padding: 0.7rem 1.6rem;
+    background: linear-gradient(135deg, var(--orange), var(--pink));
+    color: var(--on-accent);
+    border-width: 3px;
+    box-shadow: var(--shadow);
+    font-family: var(--font-display);
+    font-size: 1.15rem;
+    font-weight: 900;
+    letter-spacing: 0.02em;
+  }
+
+  & button.primary:hover:not(:disabled) {
+    background: linear-gradient(135deg, var(--pink), var(--purple));
+    color: var(--on-accent);
+  }
+
+  & button.primary:active:not(:disabled) {
+    transform: translate(4px, 4px);
+  }
+
+  /* --- Messages ---------------------------------------------------------- */
+
+  & .error {
+    margin: 0;
+    color: var(--error);
+    font-size: 0.875rem;
+    font-weight: 700;
+  }
+
+  & .warning,
+  & .notice {
+    margin: 0.85rem 0 0;
+    padding: 0.55rem 0.8rem;
+    color: var(--ink);
+    border: 2px solid var(--ink);
+    border-radius: 10px;
+    font-size: 0.875rem;
+  }
+
+  & .warning {
+    background: var(--warning-background);
+    border-left-width: 8px;
+    border-left-color: var(--gold);
+  }
+
+  & .notice {
+    background: var(--notice-background);
+    border-left-width: 8px;
+    border-left-color: var(--purple);
+  }
+
+  & .warning code,
+  & .notice code,
+  & .error code {
+    padding: 0 0.3em;
+    background: rgb(127 90 60 / 18%);
+    border-radius: 4px;
+    font-weight: 700;
+  }
+
+  /* --- Download and footer ----------------------------------------------- */
+
+  & .actions {
+    gap: 0.6rem 1rem;
+    margin: 2rem 0 2.5rem;
+  }
+
+  & footer {
+    padding-bottom: 2rem;
+    color: var(--ink-soft);
+    font-size: 0.85rem;
+  }
+
+  & footer p {
+    margin: 0.25rem 0;
+  }
+
+  & footer .source a {
+    margin-top: 0.35rem;
+    color: var(--ink);
+  }
+
+  & footer .source a:hover,
+  & footer .source a:focus-visible {
+    color: var(--pink);
+  }
+}

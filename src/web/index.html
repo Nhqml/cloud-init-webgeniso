@@ -1,7 +1,7 @@
 <!doctype html>
 <!-- SPDX-License-Identifier: AGPL-3.0-or-later -->
 <!-- Copyright (C) 2026 Kenji Gaillac -->
-<html lang="en">
+<html lang="en" data-theme="default">
 
 <head>
   <meta charset="utf-8" />
@@ -9,6 +9,24 @@
   <meta name="color-scheme" content="light dark" />
   <title>cloud-init ISO generator</title>
   <link rel="icon" type="image/svg+xml" href="./favicon.svg" />
+  <script>
+    // Restores a saved theme before the page is drawn. Only the Default
+    // theme ships with the page; the others are loaded on demand by
+    // main.ts, so until it's there the page stays hidden ("theme-pending")
+    // rather than flashing the wrong theme, for 3 seconds at most. Keep the
+    // list in sync with THEMES in theme.ts.
+    try {
+      const theme = localStorage.getItem("theme");
+      if (["jukebox", "windoze"].includes(theme)) {
+        const root = document.documentElement;
+        root.dataset.theme = theme;
+        root.classList.add("theme-pending");
+        setTimeout(() => root.classList.remove("theme-pending"), 3000);
+      }
+    } catch {
+      // Storage unavailable (e.g. blocked): keep the default theme.
+    }
+  </script>
   <link rel="stylesheet" href="./style.css" />
   <script type="module" src="./main.ts"></script>
 </head>
@@ -114,6 +132,15 @@
       <a href="https://www.gnu.org/licenses/agpl-3.0.html">GNU AGPL v3 or later</a>.
     </p>
   </footer>
+
+  <div class="theme-picker">
+    <label for="theme" class="visually-hidden">Theme</label>
+    <select id="theme">
+      <option value="default">Default</option>
+      <option value="jukebox">Jukebox</option>
+      <option value="windoze">Windoze</option>
+    </select>
+  </div>
 </body>
 
 </html>

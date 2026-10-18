@@ -137,7 +137,11 @@ E2E_VM_TEARDOWN=keep pnpm test:e2e  # e2e tests, leaving the VM running
 
 ```
 src/lib/            the ISO writer (internal library)
-src/web/            the web page (Vite root): index.html, main.ts, style.css
+src/web/            the web page (Vite root): index.html, main.ts (DOM wiring),
+                    seed.ts and theme.ts (logic), style.css
+src/web/styles/     base.css (shared layout) and one stylesheet per theme;
+                    only base + default ship with the page, jukebox/windoze load
+                    on demand
 tests/unit/         TypeScript unit tests (node:test): lib/ and web/
 tests/integration/  Python tests reading images back with bsdtar and pycdlib
 tests/e2e/          Python tests on Linux in a Lima VM

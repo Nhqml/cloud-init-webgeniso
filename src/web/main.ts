@@ -1,6 +1,8 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 // Copyright (C) 2026 Kenji Gaillac
 
+/// <reference types="vite/client" />
+
 // DOM wiring for the page. Decisions live in seed.ts, which is unit-tested;
 // this file only reads the form, shows messages and triggers the download.
 
@@ -14,6 +16,7 @@ import {
   seedFiles,
   userDataWarning,
 } from "./seed.ts";
+import { DEFAULT_THEME, THEME_STORAGE_KEY, type Theme, parseTheme } from "./theme.ts";
 
 /** What each editor starts with. */
 const DEFAULT_CONTENT: Record<string, string> = {
@@ -178,7 +181,54 @@ function download(image: Uint8Array<ArrayBuffer>, name: string): void {
   setTimeout(() => URL.revokeObjectURL(url), 10_000);
 }
 
+/**
+ * Stylesheets of the themes that don't ship with the page, fetched the first
+ * time they're used. The Default theme is part of style.css.
+ */
+const THEME_STYLESHEETS: Partial<Record<Theme, () => Promise<unknown>>> = {
+  jukebox: () => import("./styles/theme-jukebox.css"),
+  windoze: () => import("./styles/theme-windoze.css"),
+};
+
+/**
+ * Wires the theme picker: shows the current theme (index.html's early script
+ * may have restored a saved one), switches and remembers it on change. A
+ * theme's stylesheet is loaded before switching to it, and the page shown
+ * once it's ready. Storage is a convenience: without it, themes still switch.
+ */
+function setUpThemePicker(): void {
+  const root = document.documentElement;
+  const picker = element<HTMLSelectElement>(document, "#theme");
+  let latest = 0; // If the user switches quickly, the last choice wins.
+
+  const apply = async (theme: Theme): Promise<void> => {
+    const request = ++latest;
+    picker.value = theme;
+    try {
+      await THEME_STYLESHEETS[theme]?.();
+    } catch {
+      theme = DEFAULT_THEME; // Couldn't load it: fall back to the default.
+      picker.value = theme;
+    }
+    if (request !== latest) return;
+    root.dataset.theme = theme;
+    root.classList.remove("theme-pending");
+  };
+
+  void apply(parseTheme(root.dataset.theme));
+  picker.addEventListener("change", () => {
+    const theme = parseTheme(picker.value);
+    void apply(theme);
+    try {
+      localStorage.setItem(THEME_STORAGE_KEY, theme);
+    } catch {
+      // Storage unavailable: the theme just isn't remembered.
+    }
+  });
+}
+
 function main(): void {
+  setUpThemePicker();
   const instanceId = element<HTMLInputElement>(document, "#instance-id");
   const hostname = element<HTMLInputElement>(document, "#hostname");
   const downloadButton = element<HTMLButtonElement>(document, "#download");

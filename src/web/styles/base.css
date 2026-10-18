@@ -1,0 +1,191 @@
+/* SPDX-License-Identifier: AGPL-3.0-or-later */
+/* Copyright (C) 2026 Kenji Gaillac */
+
+/*
+ * Layout shared by every theme: how things are arranged, not how they
+ * look. Colours, fonts, borders and spacing live in the theme files.
+ */
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  /* A column filling the window, so the footer sits at the bottom even
+     when the content is shorter than the screen. */
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  min-height: 100dvh;
+  margin: 0;
+}
+
+main,
+footer {
+  width: 100%;
+  max-width: 52rem;
+  margin: 0 auto;
+  padding: 0 1rem;
+}
+
+main {
+  flex: 1;
+}
+
+/* Hidden while a saved theme's stylesheet loads (see index.html). */
+.theme-pending body {
+  visibility: hidden;
+}
+
+/* The theme picker: a discreet control floating in the bottom-right
+   corner, fully visible only when hovered or focused. */
+.theme-picker {
+  position: fixed;
+  right: 0.75rem;
+  bottom: 0.75rem;
+  z-index: 10;
+  opacity: 0.25;
+  transition: opacity 150ms ease;
+}
+
+.theme-picker:hover,
+.theme-picker:focus-within {
+  opacity: 1;
+}
+
+/* Our own arrow instead of the native one, which some browsers draw against
+   the border: a chevron in the text colour, inside the right padding that
+   each theme gives the select. */
+.theme-picker select {
+  appearance: none;
+  cursor: pointer;
+}
+
+.theme-picker::after {
+  position: absolute;
+  top: 50%;
+  right: 0.7rem;
+  width: 0.35rem;
+  height: 0.35rem;
+  border-right: 2px solid currentColor;
+  border-bottom: 2px solid currentColor;
+  transform: translateY(-70%) rotate(45deg);
+  pointer-events: none;
+  content: "";
+}
+
+/* Hidden on screen, still read by screen readers. */
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.fields {
+  display: grid;
+  grid-template-columns: max-content 1fr;
+  align-items: center;
+}
+
+.fields .error {
+  grid-column: 2;
+}
+
+input[type="text"] {
+  width: 100%;
+}
+
+textarea {
+  display: block;
+  width: 100%;
+  resize: vertical;
+  tab-size: 2;
+}
+
+.file-header {
+  display: flex;
+  align-items: center;
+}
+
+.file-header h2 {
+  flex: 1;
+}
+
+.include {
+  display: inline-flex;
+  align-items: center;
+  cursor: pointer;
+}
+
+.binary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+button {
+  font: inherit;
+  cursor: pointer;
+}
+
+button:disabled {
+  cursor: not-allowed;
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  align-items: center;
+}
+
+.actions input[type="text"] {
+  width: auto;
+  flex: 1;
+  min-width: 12rem;
+  max-width: 24rem;
+}
+
+.actions .error {
+  flex-basis: 100%;
+  text-align: right;
+}
+
+footer {
+  text-align: center;
+}
+
+footer .source a {
+  display: inline-block;
+}
+
+footer .source svg {
+  display: block;
+}
+
+[hidden] {
+  display: none !important;
+}
+
+@media (max-width: 40rem) {
+  .fields {
+    grid-template-columns: 1fr;
+  }
+
+  .fields .error {
+    grid-column: 1;
+  }
+
+  .file-header {
+    flex-wrap: wrap;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    transition: none !important;
+  }
+}
