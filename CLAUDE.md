@@ -103,12 +103,14 @@ time-dependent, or add nothing for a VM seed:
   and pycdlib, and compare with `pycdlib-genisoimage`.
 - E2E tests run Linux in a Lima VM (Lima from mise, Ubuntu LTS template)
   with its own `LIMA_HOME` (`.lima/`, gitignored) and no host mounts, so it
-  never touches other Lima instances. They are not part of `pnpm test`; run
+  never touches other Lima instances. `mise.toml` sets `LIMA_HOME` for the
+  repository, so `limactl` in the mise environment sees only that VM; the
+  test sets it too, so it also works when run outside mise. They are not part of `pnpm test`; run
   them with `pnpm test:e2e`. `E2E_VM_TEARDOWN` chooses what happens to the
   VM afterwards: `stop` (default, keeps the disk; the tests only attach and
   mount images, so a reused VM is fine), `delete` (next run starts fresh) or
   `keep` (leaves it running, fastest re-runs). Remove the VM with
-  `LIMA_HOME=.lima limactl delete --force e2e`.
+  `limactl delete --force e2e` (in the mise environment).
 - Package manager: pnpm.
 - TypeScript runs directly in Node (type stripping), so source must stay
   erasable: no `enum`, `namespace` or parameter properties

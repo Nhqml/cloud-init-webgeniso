@@ -2,6 +2,11 @@
 node = "26.12.0"
 pnpm = "12.14.0"
 
-# For integration testing
+# For integration/E2E testing
 "conda:libarchive" = "3.8.9"
 lima = "2.2.1"
+
+[env]
+# Lima VMs for the e2e tests live in the repository, apart from any other
+# Lima instances on this machine.
+LIMA_HOME = "{{config_root}}/.lima"
