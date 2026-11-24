@@ -16,7 +16,13 @@ import {
   seedFiles,
   userDataWarning,
 } from "./seed.ts";
-import { DEFAULT_THEME, THEME_STORAGE_KEY, type Theme, parseTheme } from "./theme.ts";
+import {
+  DEFAULT_THEME,
+  THEME_STORAGE_KEY,
+  type Theme,
+  downloadBehavior,
+  parseTheme,
+} from "./theme.ts";
 
 /** What each editor starts with. */
 const DEFAULT_CONTENT: Record<string, string> = {
@@ -245,6 +251,91 @@ function playDiscoJingle(): void {
     .catch(() => void context.close());
 }
 
+/** State of the Windoze error popups: open count, the one-time dim, the
+ *  first popup's position (new ones spawn near it), top z-index, audio. */
+const windoze = {
+  open: 0,
+  dim: null as HTMLDivElement | null,
+  first: null as DOMRect | null,
+  topZ: 100,
+  audio: null as AudioContext | null,
+};
+
+/**
+ * Plays the Windoze error beep, resuming the shared audio context each
+ * time (delayed popups spawn outside a user gesture). Silent on failure.
+ */
+function playWindozeBeep(): void {
+  try {
+    const context = (windoze.audio ??= new AudioContext());
+    void context.resume();
+    import("./sound.ts")
+      .then((sound) => sound.playErrorBeep(context))
+      .catch(() => { });
+  } catch {
+    // No Web Audio.
+  }
+}
+
+function spawnWindozeErrors(): void {
+  const count = 1 + Math.floor(Math.random() * 5);
+  for (let i = 0; i < count; i++) setTimeout(spawnWindozeError, i * 150);
+}
+
+/**
+ * Spawns one error popup, cloned from the page's template. Non-modal, so
+ * every popup stays clickable and closes on its own OK or ×; the desktop
+ * dims once, behind the first popup only.
+ */
+function spawnWindozeError(): void {
+  const template = element<HTMLTemplateElement>(document, "#windoze-error-template");
+  const source = template.content.firstElementChild;
+  if (!(source instanceof HTMLDialogElement)) throw new Error("missing element: #windoze-error-template dialog");
+  const dialog = source.cloneNode(true) as HTMLDialogElement;
+  document.body.appendChild(dialog);
+  dialog.addEventListener("close", () => {
+    dialog.remove();
+    windoze.open -= 1;
+    if (windoze.open === 0) {
+      windoze.dim?.remove();
+      windoze.dim = null;
+      windoze.first = null;
+    }
+  });
+  for (const button of dialog.querySelectorAll<HTMLButtonElement>(".dialog-ok, .dialog-close")) {
+    button.addEventListener("click", () => dialog.close());
+  }
+  dialog.addEventListener("click", (event) => event.stopPropagation());
+  if (windoze.open === 0) {
+    windoze.dim = document.createElement("div");
+    windoze.dim.className = "windoze-dim";
+    document.body.appendChild(windoze.dim);
+  }
+  windoze.open += 1;
+  dialog.style.zIndex = String(++windoze.topZ);
+  dialog.show();
+  playWindozeBeep();
+  placeWindozeError(dialog);
+}
+
+function placeWindozeError(dialog: HTMLDialogElement): void {
+  const rect = dialog.getBoundingClientRect();
+  let x = (window.innerWidth - rect.width) / 2;
+  let y = (window.innerHeight - rect.height) / 2;
+  if (windoze.first !== null) {
+    const dx = (Math.random() < 0.5 ? -1 : 1) * (48 + Math.random() * 128);
+    const dy = (Math.random() < 0.5 ? -1 : 1) * (48 + Math.random() * 128);
+    x = windoze.first.left + windoze.first.width / 2 + dx - rect.width / 2;
+    y = windoze.first.top + windoze.first.height / 2 + dy - rect.height / 2;
+  }
+  const pad = 8;
+  x = Math.min(Math.max(x, pad), window.innerWidth - rect.width - pad);
+  y = Math.min(Math.max(y, pad), window.innerHeight - rect.height - pad);
+  dialog.style.left = `${Math.round(x)}px`;
+  dialog.style.top = `${Math.round(y)}px`;
+  windoze.first ??= new DOMRect(x, y, rect.width, rect.height);
+}
+
 function main(): void {
   setUpThemePicker();
   const instanceId = element<HTMLInputElement>(document, "#instance-id");
@@ -298,7 +389,15 @@ function main(): void {
     downloadButton.disabled = !(instanceIdValid() && hostnameValid());
   };
 
-  downloadButton.addEventListener("click", () => {
+  downloadButton.addEventListener("click", (event) => {
+    const theme = parseTheme(document.documentElement.dataset.theme);
+    // Some themes are a behaviour, not just looks: Windoze refuses the
+    // download and pops up an error instead.
+    if (downloadBehavior(theme) === "error-popup") {
+      event.stopPropagation(); // The document handler must not spawn a second batch.
+      spawnWindozeErrors();
+      return;
+    }
     try {
       const files = seedFiles({
         metaData: { instanceId: instanceId.value, hostname: hostname.value },
@@ -307,10 +406,15 @@ function main(): void {
         vendorData: editor("vendor-data").content(),
       });
       download(buildSeedIso(files), fileName.value.trim() || isoFileName(instanceId.value));
-      if (document.documentElement.dataset.theme === "jukebox") playDiscoJingle();
+      if (theme === "jukebox") playDiscoJingle();
     } catch (error) {
       show(downloadError, `Couldn't build the image: ${(error as Error).message}`);
     }
+  });
+
+  // While Windoze popups are open, clicks outside them spawn more.
+  document.addEventListener("click", () => {
+    if (windoze.open > 0) spawnWindozeErrors();
   });
 
   update();

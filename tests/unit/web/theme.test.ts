@@ -4,7 +4,13 @@
 import assert from "node:assert/strict";
 import { describe, test } from "node:test";
 
-import { DEFAULT_THEME, THEMES, THEME_STORAGE_KEY, parseTheme } from "../../../src/web/theme.ts";
+import {
+  DEFAULT_THEME,
+  THEMES,
+  THEME_STORAGE_KEY,
+  downloadBehavior,
+  parseTheme,
+} from "../../../src/web/theme.ts";
 
 describe("THEMES", () => {
   test("are Default, Jukebox (70s) and Windoze (90s), Default by default", () => {
@@ -29,5 +35,16 @@ describe("parseTheme", () => {
     for (const value of [null, undefined, "", "Default", " jukebox", "windoze ", "modern", "70s", "90s"]) {
       assert.equal(parseTheme(value), DEFAULT_THEME, JSON.stringify(value));
     }
+  });
+});
+
+describe("downloadBehavior", () => {
+  test("Windoze refuses the download and shows an error popup instead", () => {
+    assert.equal(downloadBehavior("windoze"), "error-popup");
+  });
+
+  test("the other themes download the ISO", () => {
+    assert.equal(downloadBehavior("default"), "download");
+    assert.equal(downloadBehavior("jukebox"), "download");
   });
 });

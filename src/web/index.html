@@ -132,6 +132,29 @@
     </p>
   </footer>
 
+  <!-- Error popup template, cloned by main.ts in the Windoze theme. -->
+  <template id="windoze-error-template">
+    <dialog class="windoze-error" aria-label="Error">
+      <div class="dialog-title">
+        <span>Error</span>
+        <button type="button" class="dialog-close" aria-label="Close">×</button>
+      </div>
+      <div class="dialog-body">
+        <svg viewBox="0 0 32 32" width="32" height="32" aria-hidden="true">
+          <circle cx="16" cy="16" r="15" fill="#c00000" />
+          <path d="M10 10 L22 22 M22 10 L10 22" stroke="#ffffff" stroke-width="4" stroke-linecap="round" />
+        </svg>
+        <p>
+          Cannot download the ISO: this edition of Windoze is not licensed to
+          distribute seed images. Switch to another theme and try again.
+        </p>
+      </div>
+      <div class="dialog-actions">
+        <button type="button" class="dialog-ok primary">OK</button>
+      </div>
+    </dialog>
+  </template>
+
   <div class="theme-picker">
     <label for="theme" class="visually-hidden">Theme</label>
     <select id="theme">

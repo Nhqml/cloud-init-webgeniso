@@ -4,7 +4,7 @@
 import assert from "node:assert/strict";
 import { describe, test } from "node:test";
 
-import { BEAT, type Note, discoJingle, midiToFrequency } from "../../../src/web/jingle.ts";
+import { BEAT, type Note, discoJingle, midiToFrequency } from "../../../src/web/sound.ts";
 
 const close = (actual: number, expected: number): void =>
   assert.ok(Math.abs(actual - expected) < 0.01, `${actual} ≈ ${expected}`);

@@ -18,8 +18,13 @@ export const DEFAULT_THEME: Theme = "default";
 export const THEME_STORAGE_KEY = "theme";
 
 /** `value` if it names a theme, else the default theme. */
-export function parseTheme(value: string | null | undefined): Theme {
+export function parseTheme (value: string | null | undefined): Theme {
   return (THEMES as readonly (string | null | undefined)[]).includes(value)
     ? (value as Theme)
     : DEFAULT_THEME;
+}
+
+export type DownloadBehavior = "download" | "error-popup";
+export function downloadBehavior (theme: Theme): DownloadBehavior {
+  return theme === "windoze" ? "error-popup" : "download";
 }

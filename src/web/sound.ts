@@ -1,21 +1,61 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 // Copyright (C) 2026 Kenji Gaillac
 
-// Plays the disco jingle with Web Audio, synthesizing every instrument, so
-// nothing is downloaded. Kept thin, like main.ts: what plays and when is in
-// jingle.ts, which is unit-tested. Loaded on demand by main.ts.
+// Audio for the page's themes, synthesized with Web Audio so nothing is
+// downloaded: the Jukebox jingle (data below) and the Windoze error beep.
 
-import { type Note, discoJingle } from "./jingle.ts";
+/** One note of the jingle, in seconds from its start. */
+export interface Note {
+  time: number;
+  duration: number;
+  instrument: "kick" | "clap" | "hat" | "crash" | "bass" | "stab";
+  /** Pitches in hertz; empty for the drums. */
+  frequencies: number[];
+}
+
+/** One beat at 128 BPM, the classic disco tempo, in seconds. */
+export const BEAT = 60 / 128;
+
+/** The frequency of MIDI note `note`, in equal temperament with A4 = 440 Hz. */
+export function midiToFrequency (note: number): number {
+  return 440 * 2 ** ((note - 69) / 12);
+}
+
+/**
+ * One bar of disco at 128 BPM, shaped to end on a punch: a groove for three
+ * beats (four-on-the-floor kick, claps on the backbeat, open hi-hats on the
+ * off-beats, an octave bass line), two short G major stabs, then everything
+ * landing together on the last beat: a long A major chord over a low A,
+ * with kick, clap and a crash ringing out. Nothing plays after it.
+ */
+export function discoJingle (): Note[] {
+  const notes: Note[] = [];
+  const add = (beat: number, duration: number, instrument: Note["instrument"], midi: number[] = []) =>
+    notes.push({ time: beat * BEAT, duration, instrument, frequencies: midi.map(midiToFrequency) });
+
+  const final = 3;
+  for (let beat = 0; beat <= final; beat++) add(beat, 0.3, "kick");
+  for (const beat of [1, final]) add(beat, 0.2, "clap");
+  for (const beat of [0.5, 1.5, 2.5]) add(beat, 0.12, "hat");
+
+  // E2 E3 E2 E3 G2 G3 on eighth notes, then a long low A1 under the final chord.
+  [40, 52, 40, 52, 43, 55].forEach((midi, eighth) => add(eighth / 2, 0.2, "bass", [midi]));
+  add(final, 0.9, "bass", [33]);
+
+  // "Da-da": two short G major stabs (G3 B3 D4)...
+  add(2, 0.14, "stab", [55, 59, 62]);
+  add(2.5, 0.14, "stab", [55, 59, 62]);
+  // ..."DAAA": A major (A3 C#4 E4 A4), G to A being the triumphant move.
+  add(final, 1, "stab", [57, 61, 64, 69]);
+  add(final, 1.1, "crash");
+
+  return notes.sort((a, b) => a.time - b.time);
+}
 
 /** Overall loudness, from 0 to 1: noticeable, not startling. */
 const VOLUME = 0.25;
 
-/**
- * Plays the jingle on `context`, which the caller creates during the click
- * (some browsers only let audio start inside a user gesture), then closes
- * the context once the jingle is over.
- */
-export function playDiscoJingle(context: AudioContext): void {
+export function playDiscoJingle (context: AudioContext): void {
   const master = context.createGain();
   master.gain.value = VOLUME;
   master.connect(context.destination);
@@ -31,7 +71,34 @@ export function playDiscoJingle(context: AudioContext): void {
   setTimeout(() => void context.close(), (end - context.currentTime + 0.5) * 1000);
 }
 
-function play(
+export function playErrorBeep (context: AudioContext): void {
+  const master = context.createGain();
+  master.gain.value = VOLUME;
+  master.connect(context.destination);
+
+  const harmonics = [1, 0.28, 0.21, 0.03, 0.07, 0.07, 0.15, 0.03];
+  const wave = context.createPeriodicWave(
+    Float32Array.from([0, ...harmonics]),
+    new Float32Array(1 + harmonics.length),
+    { disableNormalization: true },
+  );
+
+  const start = context.currentTime + 0.02;
+  const duration = 1.1;
+  const oscillator = context.createOscillator();
+  oscillator.setPeriodicWave(wave);
+  oscillator.frequency.value = 110;
+  const gain = context.createGain();
+  gain.gain.setValueAtTime(0, start);
+  gain.gain.linearRampToValueAtTime(0.5, start + 0.05); // fast attack
+  gain.gain.exponentialRampToValueAtTime(0.001, start + duration); // long decay
+  oscillator.connect(gain);
+  gain.connect(master);
+  oscillator.start(start);
+  oscillator.stop(start + duration);
+}
+
+function play (
   context: AudioContext,
   output: AudioNode,
   noise: AudioBuffer,
@@ -105,7 +172,7 @@ function play(
  * A gain node shaping a note: a 5 ms rise to `peak`, then a fade to silence
  * over `duration`, so notes start and stop without clicks.
  */
-function envelope(
+function envelope (
   context: AudioContext,
   output: AudioNode,
   time: number,
@@ -121,7 +188,7 @@ function envelope(
 }
 
 /** Plays `noise` through a `type` filter at `frequency` into `output`. */
-function playNoise(
+function playNoise (
   context: AudioContext,
   noise: AudioBuffer,
   type: BiquadFilterType,
@@ -142,7 +209,7 @@ function playNoise(
 }
 
 /** Two seconds of white noise, for the hi-hats, claps and crash. */
-function whiteNoise(context: AudioContext): AudioBuffer {
+function whiteNoise (context: AudioContext): AudioBuffer {
   const buffer = context.createBuffer(1, context.sampleRate * 2, context.sampleRate);
   const samples = buffer.getChannelData(0);
   for (let i = 0; i < samples.length; i++) samples[i] = Math.random() * 2 - 1;

@@ -263,6 +263,75 @@
     box-shadow: var(--raised);
   }
 
+  /* --- Error popups: windows floating over the dimmed desktop ------------ */
+
+  & dialog.windoze-error {
+    position: fixed;
+    width: 340px;
+    max-width: calc(100vw - 2rem);
+    margin: 0; /* main.ts sets left/top */
+    padding: 3px;
+    background: var(--silver);
+    color: var(--black);
+    border: 0;
+    border-radius: 0;
+    box-shadow: var(--raised);
+    font: inherit;
+  }
+
+  /* The desktop dims once, behind all the popups (z-index below theirs). */
+  & .windoze-dim {
+    position: fixed;
+    inset: 0;
+    z-index: 90;
+    background: rgba(0, 0, 0, 0.35);
+  }
+
+  & .dialog-title {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    margin: 0;
+    padding: 3px 4px 3px 6px;
+    background: var(--title-bar);
+    color: var(--white);
+    font-size: 13px;
+    font-weight: 700;
+  }
+
+  & .dialog-close {
+    min-width: 0;
+    width: 18px;
+    height: 16px;
+    padding: 0;
+    background: var(--silver);
+    color: var(--black);
+    font-size: 11px;
+    line-height: 1;
+  }
+
+  & .dialog-body {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 14px 12px;
+  }
+
+  & .dialog-body p {
+    margin: 0;
+  }
+
+  & .dialog-body svg {
+    flex: none;
+  }
+
+  & .dialog-actions {
+    display: flex;
+    justify-content: center;
+    padding: 0 12px 12px;
+  }
+
   /* --- Footer: a status bar with sunken panels --------------------------- */
 
   & footer {
