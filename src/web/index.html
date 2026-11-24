@@ -45,7 +45,22 @@
     <section class="card" aria-labelledby="meta-data-title">
       <h2 id="meta-data-title">meta-data</h2>
       <div class="fields">
-        <label for="instance-id">instance-id</label>
+        <span class="label-info">
+          <label for="instance-id">instance-id</label>
+          <span class="tooltip">
+            <button type="button" class="info" aria-describedby="instance-id-tip"
+              aria-label="About the instance-id">
+              <svg viewBox="-0.5 -0.5 14 14" fill="currentColor" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                <path d="M6.01063 9.74081V5.01354H6.98932V9.74081H6.01063ZM6.50921 4.36723C6.35225 4.36723 6.21683 4.31183 6.10296 4.20104C5.99217 4.09024 5.93677 3.96098 5.93677 3.81325C5.93677 3.66553 5.99217 3.53627 6.10296 3.42547C6.21683 3.31467 6.35225 3.25928 6.50921 3.25928C6.65694 3.25928 6.7862 3.31467 6.89699 3.42547C7.00779 3.53627 7.06319 3.66553 7.06319 3.81325C7.06319 3.97021 7.00779 4.10255 6.89699 4.21027C6.7862 4.31491 6.65694 4.36723 6.50921 4.36723Z"></path>
+                <circle cx="6.5" cy="6.5" r="6" fill="none" stroke="currentColor"></circle>
+              </svg>
+            </button>
+            <span id="instance-id-tip" class="tooltip-body" role="tooltip">Unique ID of this VM
+              instance. cloud-init stores it on first boot and compares it on every boot: if it
+              changes, the VM is treated as a new instance and the per-instance modules run
+              again.</span>
+          </span>
+        </span>
         <input id="instance-id" type="text" autocomplete="off" spellcheck="false"
           aria-describedby="instance-id-error" />
         <p id="instance-id-error" class="error" aria-live="polite" hidden></p>

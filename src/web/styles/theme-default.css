@@ -109,6 +109,31 @@
     font-size: 0.875rem;
   }
 
+  /* --- Info tooltip ------------------------------------------------------ */
+
+  & button.info {
+    padding: 0;
+    background: none;
+    color: var(--muted);
+    border: none;
+    font-size: 0.75rem;
+  }
+
+  & button.info:hover:not(:disabled) {
+    background: none;
+    color: var(--text);
+  }
+
+  & .tooltip-body {
+    padding: 0.5rem 0.75rem;
+    background: var(--text);
+    color: var(--background);
+    border-radius: 6px;
+    box-shadow: 0 4px 14px rgb(0 0 0 / 25%);
+    font-size: 0.8125rem;
+    line-height: 1.45;
+  }
+
   /* --- Inputs ------------------------------------------------------------ */
 
   & input[type="text"],

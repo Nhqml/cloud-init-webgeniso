@@ -94,6 +94,60 @@ main {
   grid-column: 2;
 }
 
+/* An (i) info button next to a field label, with its tooltip popup. The
+   tooltip shows on hover and on keyboard focus and sits above the button;
+   colours and fonts live in the theme files. */
+.label-info {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.tooltip {
+  position: relative;
+  display: inline-flex;
+}
+
+.info {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.2em;
+  height: 1.2em;
+  padding: 0;
+  background: none;
+  border: none;
+  font-size: 0.75em;
+  cursor: help;
+}
+
+.info svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.tooltip-body {
+  position: absolute;
+  bottom: calc(100% + 0.4rem);
+  left: 0;
+  z-index: 20;
+  width: max-content;
+  max-width: 17rem;
+  visibility: hidden;
+  opacity: 0;
+  transition:
+    opacity 150ms ease,
+    visibility 150ms ease;
+  pointer-events: none;
+}
+
+.tooltip:hover .tooltip-body,
+.tooltip:focus-within .tooltip-body {
+  visibility: visible;
+  opacity: 1;
+}
+
 input[type="text"] {
   width: 100%;
 }

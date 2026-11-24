@@ -213,6 +213,39 @@
     font-weight: 400;
   }
 
+  /* --- Info tooltip ------------------------------------------------------ */
+
+  & button.info {
+    padding: 0;
+    background: none;
+    color: var(--ink-soft);
+    border: none;
+    box-shadow: none;
+    font-size: 0.7rem;
+    transition: none;
+  }
+
+  & button.info:hover:not(:disabled) {
+    background: none;
+    color: var(--ink);
+  }
+
+  & button.info:active:not(:disabled) {
+    transform: none;
+    box-shadow: none;
+  }
+
+  & .tooltip-body {
+    padding: 0.5rem 0.75rem;
+    background: var(--ink);
+    color: var(--paper);
+    border: 2px solid var(--ink);
+    border-radius: 8px;
+    box-shadow: var(--small-shadow);
+    font-size: 0.8rem;
+    line-height: 1.45;
+  }
+
   /* --- Inputs ------------------------------------------------------------ */
 
   & input[type="text"] {
